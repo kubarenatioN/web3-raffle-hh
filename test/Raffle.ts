@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { Signer } from 'ethers/providers';
+import { Signer } from 'ethers';
 import hre from 'hardhat';
 
 const { ethers, networkConfig, networkName, networkHelpers } =
