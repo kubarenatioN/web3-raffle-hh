@@ -1,5 +1,5 @@
+import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/types';
 import { expect } from 'chai';
-import { Signer } from 'ethers';
 import hre from 'hardhat';
 
 const { ethers, networkConfig, networkName, networkHelpers } =
@@ -29,7 +29,7 @@ async function deployRaffleFixture() {
   return { raffle, mockV3Aggregator };
 }
 
-function deployRaffleFixtureExtra(deployer?: Signer) {
+function deployRaffleFixtureExtra(deployer?: HardhatEthersSigner) {
   return async function _deployRaffleFixtureExtra() {
     const { mockV3Aggregator } = await deployMockV3Aggregator();
     const dataFeedAddress = await mockV3Aggregator.getAddress();
