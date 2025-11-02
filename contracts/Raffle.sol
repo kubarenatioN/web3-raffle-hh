@@ -6,6 +6,7 @@ import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interf
 error Raffle__NotEnoughFeeSent(uint256 sent, uint256 feePrice);
 error Raffle__OnlyOwner(address sender);
 error Raffle__InvalidDataFeedAnswer(int256 answer);
+error Raffle__NotEnoughTimePassedToDraw(uint256 timePassed);
 
 contract Raffle {
     event RaffleEntered(
@@ -27,6 +28,10 @@ contract Raffle {
     mapping(address => uint256) public s_playersMap; // probably unused?
     address[] public s_playersList;
 
+    mapping(address => uint256) winners;
+
+    uint256 public recentDrawAt;
+
     uint256 public s_totalBalance = 0;
 
     /// Entrance fee in USD
@@ -34,9 +39,18 @@ contract Raffle {
 
     address public immutable i_owner;
 
-    constructor(uint256 _entranceFeeUsd, address _dataFeed) {
+    /// interval in seconds
+    uint256 public immutable i_drawInterval;
+
+    constructor(
+        uint256 _entranceFeeUsd,
+        address _dataFeed,
+        uint256 _drawInterval
+    ) {
         s_entranceFee = _entranceFeeUsd;
         i_owner = msg.sender;
+        i_drawInterval = _drawInterval;
+        recentDrawAt = block.timestamp - 1; // set inital value
         i_dataFeed = AggregatorV3Interface(_dataFeed);
     }
 
@@ -65,9 +79,7 @@ contract Raffle {
         }
 
         // in Wei
-        price =
-            (s_entranceFee * 10 ** 18) /
-            (uint256(answer) / (10 ** decimals));
+        price = s_entranceFee * ((1 * 10 ** (18 + decimals)) / uint256(answer));
     }
 
     // TODO: remove later, debug
@@ -85,14 +97,33 @@ contract Raffle {
         return i_dataFeed.latestRoundData();
     }
 
+    function pickWinnerByOwner() external onlyOwner returns (address) {
+        uint256 timePassed = timePassedSinceRecentDraw();
+        if (timePassed < i_drawInterval) {
+            revert Raffle__NotEnoughTimePassedToDraw(timePassed);
+        }
+
+        // pick a winner randomly
+        // send money to a winner and commission to the Raffle owner
+        return address(this); // debug
+    }
+
+    function pickWinner() external {
+        // address winner = getRandomWinner();
+    }
+
     // TODO: Implement
-    function getRandomWinner() external {}
+    function getRandomWinner() public {}
 
     function updateEntranceFee(uint256 _val) public onlyOwner {
         uint256 oldFee = s_entranceFee;
         s_entranceFee = _val;
 
         emit RaffleEntranceFeeUpdated(oldFee, s_entranceFee);
+    }
+
+    function timePassedSinceRecentDraw() public view returns (uint256) {
+        return block.timestamp - recentDrawAt;
     }
 
     modifier onlyOwner() {
