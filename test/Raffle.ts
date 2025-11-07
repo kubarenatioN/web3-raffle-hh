@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import hre from 'hardhat';
+import { Raffle } from '../types/ethers-contracts';
 
 const { ethers, networkConfig, networkName, networkHelpers } =
   await hre.network.connect();
@@ -15,32 +16,83 @@ async function deployMockV3Aggregator() {
   return { mockV3Aggregator };
 }
 
-async function deployRaffleFixture() {
+async function deployVRFCoordinatorMock() {
+  const args = [0, 0, 0]; // for local tests
+  const vrfCoordinator = await ethers.deployContract(
+    'VRFCoordinatorV2Mock',
+    args,
+  );
+
+  vrfCoordinator.waitForDeployment();
+
+  return { vrfCoordinator };
+}
+
+async function prepareDependencies() {
   const { mockV3Aggregator } = await deployMockV3Aggregator();
+
+  const { vrfCoordinator } = await deployVRFCoordinatorMock();
+
+  const subCreatedFilter = vrfCoordinator.filters.SubscriptionCreated();
+
+  let tx = await vrfCoordinator.createSubscription();
+  await tx.wait(1);
+
+  const eventLog = await vrfCoordinator.queryFilter(subCreatedFilter);
+
+  const subId: BigInt = eventLog[0].args[0];
+
+  return { mockV3Aggregator, vrfCoordinator, subId };
+}
+
+async function deployRaffleFixture() {
+  const { mockV3Aggregator, vrfCoordinator, subId } =
+    await prepareDependencies();
+
   const dataFeedAddress = await mockV3Aggregator.getAddress();
+  const vrfCoordinatorAddress = await vrfCoordinator.getAddress();
 
   const fee = 10; // in USD
   const drawInterval = 12 * 3600; // 12 hours
-  const args = [fee, dataFeedAddress, drawInterval];
+
+  const args = [
+    fee,
+    dataFeedAddress,
+    drawInterval,
+    vrfCoordinatorAddress,
+    subId,
+  ];
   const raffle = await ethers.deployContract('Raffle', args);
   await raffle.waitForDeployment();
+
+  const tx = await vrfCoordinator.addConsumer(subId.toString(), raffle);
+  tx.wait(1);
 
   return { raffle, mockV3Aggregator };
 }
 
 function deployRaffleFixtureExtra(deployer?: any) {
   return async function _deployRaffleFixtureExtra() {
-    const { mockV3Aggregator } = await deployMockV3Aggregator();
+    const { mockV3Aggregator, vrfCoordinator, subId } =
+      await prepareDependencies();
+
     const dataFeedAddress = await mockV3Aggregator.getAddress();
+    const vrfCoordinatorAddress = await vrfCoordinator.getAddress();
 
     const fee = 10; // in USD
     const drawInterval = 12 * 3600; // 12 hours
-    const args = [fee, dataFeedAddress, drawInterval];
 
+    const args = [
+      fee,
+      dataFeedAddress,
+      drawInterval,
+      vrfCoordinatorAddress,
+      subId,
+    ];
     const raffle = await ethers.deployContract('Raffle', args, deployer);
     await raffle.waitForDeployment();
 
-    return { raffle };
+    return { raffle, mockV3Aggregator };
   };
 }
 
@@ -124,8 +176,7 @@ describe('Raffle', () => {
     it('should allow enter the raffle', async () => {
       const [signer] = await ethers.getSigners();
 
-      const { raffle, mockV3Aggregator } =
-        await networkHelpers.loadFixture(deployRaffleFixture);
+      const { raffle } = await networkHelpers.loadFixture(deployRaffleFixture);
 
       const raffleAddress = await raffle.getAddress();
       const payment = ethers.parseEther('1');
@@ -136,9 +187,11 @@ describe('Raffle', () => {
       expect(tx.to).equals(raffleAddress);
       expect(tx.from).equals(signer);
 
-      const signerBalance = await raffle.s_playersMap(signer.address);
+      const totalBalance = await raffle.s_totalBalance();
+      const entrantAddress = await raffle.s_playersList(0);
 
-      expect(signerBalance).to.equal(payment);
+      expect(totalBalance).to.equal(payment);
+      expect(entrantAddress).to.equal(signer);
     });
 
     it('should set correct balances of entrants', async () => {
@@ -157,13 +210,8 @@ describe('Raffle', () => {
       });
       await tx.wait(1);
 
-      const signerBalance = await raffle.s_playersMap(signer.address);
-      const secondBalance = await raffle.s_playersMap(secondAcc.address);
-
       const totalBalance = await raffle.s_totalBalance();
 
-      expect(signerBalance).to.equal(entrancePayment);
-      expect(secondBalance).to.equal(secondAccPayment);
       expect(totalBalance).to.equal(ethers.parseEther(`${1 + 1.5}`));
     });
 
@@ -189,4 +237,58 @@ describe('Raffle', () => {
       );
     });
   });
+
+  describe.only('VRF Coordinator', () => {
+    it('should have vrf subscription created', async () => {
+      const { raffle } = await networkHelpers.loadFixture(deployRaffleFixture);
+
+      const coordinator = await raffle.s_vrfCoordinator();
+
+      expect(coordinator).to.exist;
+    });
+
+    it('should request random words', async () => {
+      const { raffle } = await networkHelpers.loadFixture(deployRaffleFixture);
+
+      await enterRaffle(raffle);
+
+      const pickWinnerCall = raffle.pickWinnerByOwner();
+
+      expect(pickWinnerCall).to.emit(raffle, 'RaffleRandomWordsRequested');
+    });
+
+    it('should fulfill random words', async () => {
+      const { raffle } = await networkHelpers.loadFixture(deployRaffleFixture);
+
+      await enterRaffle(raffle);
+
+      const round = await raffle.s_roundsCount();
+      console.log('round:::', round);
+
+      const roundsHistoryBefore = await raffle.s_roundsHistory(round);
+      console.log('roundsHistoryBefore:', roundsHistoryBefore);
+
+      const winnerPickedFilter = raffle.filters.RaffleWinnerPicked();
+      raffle.once(winnerPickedFilter, async (winner, round) => {
+        const roundsHistory = await raffle.s_roundsHistory(round);
+
+        console.log('roundsHistory:', roundsHistory);
+      });
+
+      const tx = await raffle.pickWinnerByOwner();
+      tx.wait(1);
+    });
+
+    it('', async () => {});
+  });
 });
+
+async function enterRaffle(raffle: Raffle) {
+  const [, caller] = await ethers.getSigners();
+
+  let tx = await raffle.enter({ value: ethers.parseEther('0.5') });
+  tx.wait(1);
+
+  tx = await raffle.connect(caller).enter({ value: ethers.parseEther('0.5') });
+  tx.wait(1);
+}

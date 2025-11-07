@@ -2,40 +2,63 @@
 pragma solidity ^0.8.28;
 
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
 error Raffle__NotEnoughFeeSent(uint256 sent, uint256 feePrice);
 error Raffle__OnlyOwner(address sender);
 error Raffle__InvalidDataFeedAnswer(int256 answer);
-error Raffle__NotEnoughTimePassedToDraw(uint256 timePassed);
 
-contract Raffle {
-    event RaffleEntered(
-        address indexed sender,
-        uint256 amount,
-        uint256 totalAmount
-    );
+error Raffle__NotEnoughTimePassedToDraw(uint256 timePassed);
+error Raffle__NotEnoughUniquePlayersToDraw(uint256 uniquePlayersCount);
+error Raffle__VRFRequestIdNotMatch(uint256 expectedId, uint256 receivedId);
+
+contract Raffle is VRFConsumerBaseV2Plus {
+    struct RoundResult {
+        uint256 round;
+        address winner;
+        uint256 amount;
+    }
+
+    event RaffleEntered(address indexed sender, uint256 amount);
     event RaffleEntranceFeeUpdated(uint256 oldFee, uint256 newFee);
+    event RaffleRandomWordsRequested(uint256 indexed reqId, uint256 round);
+    event RaffleWinnerPicked(address winner, uint256 round);
 
     enum State {
         OPEN,
-        CLOSED // do I need this?
+        CLOSED, // do I need this?
+        CALCULATING
     }
 
     State public s_state = State.OPEN;
 
     AggregatorV3Interface internal immutable i_dataFeed;
 
-    mapping(address => uint256) public s_playersMap; // probably unused?
     address[] public s_playersList;
+    address[] public s_uniquePlayersList;
 
-    mapping(address => uint256) winners;
+    RoundResult[] public s_roundsHistory; // winner to win funds amount
+    mapping(uint256 => address) winners; // round number to winner address
 
     uint256 public recentDrawAt;
+
+    uint256 public s_waitingRequestId;
+
+    uint256 public s_roundsCount = 0;
 
     uint256 public s_totalBalance = 0;
 
     /// Entrance fee in USD
     uint256 public s_entranceFee;
+
+    uint256 s_subscriptionId;
+    // ???
+    bytes32 s_keyHash =
+        0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
+    uint32 callbackGasLimit = 40000;
+    uint16 requestConfirmations = 3;
+    uint32 numWords = 1;
 
     address public immutable i_owner;
 
@@ -45,13 +68,16 @@ contract Raffle {
     constructor(
         uint256 _entranceFeeUsd,
         address _dataFeed,
-        uint256 _drawInterval
-    ) {
+        uint256 _drawInterval,
+        address _vrfCoordinator,
+        uint256 _subId
+    ) VRFConsumerBaseV2Plus(_vrfCoordinator) {
         s_entranceFee = _entranceFeeUsd;
         i_owner = msg.sender;
         i_drawInterval = _drawInterval;
-        recentDrawAt = block.timestamp - 1; // set inital value
+        recentDrawAt = 0;
         i_dataFeed = AggregatorV3Interface(_dataFeed);
+        s_subscriptionId = _subId;
     }
 
     function enter() public payable {
@@ -63,11 +89,20 @@ contract Raffle {
             revert Raffle__NotEnoughFeeSent(_value, _feePrice);
         }
 
+        bool alreadyIncludedOnce = false;
+        address[] memory _u = s_uniquePlayersList;
+        for (uint i = 0; i < _u.length; i++) {
+            if (_u[i] == _sender) {
+                alreadyIncludedOnce = true;
+            }
+        }
+        if (!alreadyIncludedOnce) {
+            s_uniquePlayersList.push(_sender);
+        }
         s_playersList.push(_sender);
-        s_playersMap[_sender] += _value;
         s_totalBalance += _value;
 
-        emit RaffleEntered(_sender, _value, s_playersMap[_sender]);
+        emit RaffleEntered(_sender, _value);
     }
 
     function getFeePriceEth() public view returns (uint256 price) {
@@ -82,40 +117,70 @@ contract Raffle {
         price = s_entranceFee * ((1 * 10 ** (18 + decimals)) / uint256(answer));
     }
 
-    // TODO: remove later, debug
-    function testFeePriceEth()
-        public
-        view
-        returns (
-            uint80 roundId,
-            int256 answer,
-            uint256 startedAt,
-            uint256 updatedAt,
-            uint80 answeredInRound
-        )
-    {
-        return i_dataFeed.latestRoundData();
-    }
-
-    function pickWinnerByOwner() external onlyOwner returns (address) {
+    function pickWinnerByOwner() public onlyOwner_ returns (uint256 requestId) {
         uint256 timePassed = timePassedSinceRecentDraw();
         if (timePassed < i_drawInterval) {
             revert Raffle__NotEnoughTimePassedToDraw(timePassed);
         }
 
+        // add conditions and reverts
+        // e.g. min players count >= 2
+        uint256 uniquePlayers = s_uniquePlayersList.length;
+        if (uniquePlayers < 2) {
+            revert Raffle__NotEnoughUniquePlayersToDraw(uniquePlayers);
+        }
+
         // pick a winner randomly
         // send money to a winner and commission to the Raffle owner
-        return address(this); // debug
+        requestId = s_vrfCoordinator.requestRandomWords(
+            VRFV2PlusClient.RandomWordsRequest({
+                keyHash: s_keyHash,
+                subId: s_subscriptionId,
+                requestConfirmations: requestConfirmations,
+                callbackGasLimit: callbackGasLimit,
+                numWords: numWords,
+                extraArgs: VRFV2PlusClient._argsToBytes(
+                    VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
+                )
+            })
+        );
+
+        s_waitingRequestId = requestId;
+        s_state = State.CALCULATING;
+        emit RaffleRandomWordsRequested(requestId, s_roundsCount);
     }
 
-    function pickWinner() external {
-        // address winner = getRandomWinner();
+    function fulfillRandomWords(
+        uint256 requestId,
+        uint256[] calldata randomWords
+    ) internal override {
+        if (s_waitingRequestId != requestId) {
+            revert Raffle__VRFRequestIdNotMatch(s_waitingRequestId, requestId);
+        }
+
+        uint256 index = randomWords[0] % s_playersList.length;
+        address winner = s_playersList[index];
+        RoundResult memory result = RoundResult({
+            round: s_roundsCount,
+            winner: winner,
+            amount: 100
+        });
+
+        s_roundsHistory.push(result);
+        winners[s_roundsCount] = winner;
+
+        // delete s_playersList;
+        s_playersList = new address[](0);
+        s_uniquePlayersList = new address[](0);
+        s_state = State.OPEN;
+
+        uint256 round = s_roundsCount;
+        s_roundsCount += 1;
+
+        emit RaffleWinnerPicked(winner, round);
     }
 
-    // TODO: Implement
-    function getRandomWinner() public {}
-
-    function updateEntranceFee(uint256 _val) public onlyOwner {
+    function updateEntranceFee(uint256 _val) public onlyOwner_ {
         uint256 oldFee = s_entranceFee;
         s_entranceFee = _val;
 
@@ -126,7 +191,15 @@ contract Raffle {
         return block.timestamp - recentDrawAt;
     }
 
-    modifier onlyOwner() {
+    function getPlayerSlotsCount() public view returns (uint256) {
+        return s_playersList.length;
+    }
+
+    function getUniquePlayersCount() public view returns (uint256) {
+        return s_uniquePlayersList.length;
+    }
+
+    modifier onlyOwner_() {
         if (msg.sender != i_owner) {
             revert Raffle__OnlyOwner(msg.sender);
         }
