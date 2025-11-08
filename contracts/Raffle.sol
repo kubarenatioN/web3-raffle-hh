@@ -52,11 +52,11 @@ contract Raffle is VRFConsumerBaseV2Plus {
     /// Entrance fee in USD
     uint256 public s_entranceFee;
 
-    uint256 s_subscriptionId;
+    uint256 public s_subscriptionId;
     // ???
     bytes32 s_keyHash =
         0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
-    uint32 callbackGasLimit = 40000;
+    uint32 callbackGasLimit = 500000; // Increased for complex operations
     uint16 requestConfirmations = 3;
     uint32 numWords = 1;
 
@@ -94,6 +94,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
         for (uint i = 0; i < _u.length; i++) {
             if (_u[i] == _sender) {
                 alreadyIncludedOnce = true;
+                break;
             }
         }
         if (!alreadyIncludedOnce) {
@@ -158,12 +159,16 @@ contract Raffle is VRFConsumerBaseV2Plus {
             revert Raffle__VRFRequestIdNotMatch(s_waitingRequestId, requestId);
         }
 
+        if (s_playersList.length == 0) {
+            revert Raffle__NotEnoughUniquePlayersToDraw(0);
+        }
+
         uint256 index = randomWords[0] % s_playersList.length;
         address winner = s_playersList[index];
         RoundResult memory result = RoundResult({
             round: s_roundsCount,
             winner: winner,
-            amount: 100
+            amount: 100 // update this value
         });
 
         s_roundsHistory.push(result);

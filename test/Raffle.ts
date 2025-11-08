@@ -17,7 +17,7 @@ async function deployMockV3Aggregator() {
 }
 
 async function deployVRFCoordinatorMock() {
-  const args = [0, 0, 0]; // for local tests
+  const args = [0, 0, 100]; // for local tests
   const vrfCoordinator = await ethers.deployContract(
     'VRFCoordinatorV2Mock',
     args,
@@ -33,7 +33,7 @@ async function prepareDependencies() {
 
   const { vrfCoordinator } = await deployVRFCoordinatorMock();
 
-  const subCreatedFilter = vrfCoordinator.filters.SubscriptionCreated();
+  const subCreatedFilter = vrfCoordinator.filters.SubscriptionCreated;
 
   let tx = await vrfCoordinator.createSubscription();
   await tx.wait(1);
@@ -66,9 +66,9 @@ async function deployRaffleFixture() {
   await raffle.waitForDeployment();
 
   const tx = await vrfCoordinator.addConsumer(subId.toString(), raffle);
-  tx.wait(1);
+  await tx.wait(1);
 
-  return { raffle, mockV3Aggregator };
+  return { raffle, mockV3Aggregator, subId };
 }
 
 function deployRaffleFixtureExtra(deployer?: any) {
@@ -238,7 +238,7 @@ describe('Raffle', () => {
     });
   });
 
-  describe.only('VRF Coordinator', () => {
+  describe('VRF Coordinator', () => {
     it('should have vrf subscription created', async () => {
       const { raffle } = await networkHelpers.loadFixture(deployRaffleFixture);
 
@@ -259,24 +259,63 @@ describe('Raffle', () => {
 
     it('should fulfill random words', async () => {
       const { raffle } = await networkHelpers.loadFixture(deployRaffleFixture);
+      const raffleAddress = await raffle.getAddress();
+
+      const vrfCoordinatorAddress = await raffle.s_vrfCoordinator();
+      const vrfCoordinatorMock = await ethers.getContractAt(
+        'VRFCoordinatorV2Mock',
+        vrfCoordinatorAddress,
+      );
+
+      const randomWordsRequestedFilter =
+        raffle.filters.RaffleRandomWordsRequested();
+
+      // to inspect subscriptions
+      // const subs = await vrfCoordinatorMock.getSubscription(
+      //   await raffle.s_subscriptionId(),
+      // );
+      // console.log('vrfCoordinatorMock subs', subs);
 
       await enterRaffle(raffle);
 
-      const round = await raffle.s_roundsCount();
-      console.log('round:::', round);
-
-      const roundsHistoryBefore = await raffle.s_roundsHistory(round);
-      console.log('roundsHistoryBefore:', roundsHistoryBefore);
-
-      const winnerPickedFilter = raffle.filters.RaffleWinnerPicked();
-      raffle.once(winnerPickedFilter, async (winner, round) => {
-        const roundsHistory = await raffle.s_roundsHistory(round);
-
-        console.log('roundsHistory:', roundsHistory);
+      const winnerPicked = new Promise((res, rej) => {
+        raffle.once(raffle.filters.RaffleWinnerPicked, (winner, round) => {
+          res({ winner, round });
+        });
       });
 
-      const tx = await raffle.pickWinnerByOwner();
-      tx.wait(1);
+      const pickWinnerTx = await raffle.pickWinnerByOwner();
+      await pickWinnerTx.wait(1);
+
+      const wordsReqEvents = await raffle.queryFilter(
+        randomWordsRequestedFilter,
+      );
+      const reqId = wordsReqEvents[0].args[0];
+
+      const fulfillTx = await vrfCoordinatorMock.fulfillRandomWords(
+        reqId,
+        raffleAddress,
+      );
+      await fulfillTx.wait(1);
+
+      const [winnerPickedEvent] = await raffle.queryFilter(
+        raffle.filters.RaffleWinnerPicked,
+      );
+
+      const { winner, round } = await winnerPicked;
+      expect(winner).to.exist;
+      expect(round).to.equal(0);
+
+      // second approach - better one
+      const [winner2, round2] = winnerPickedEvent.args;
+
+      expect(winner2).to.exist;
+      expect(round2).to.equal(0);
+
+      // to see if random words were fulfilled
+      // const fulfilled = await vrfCoordinatorMock.queryFilter(
+      //   vrfCoordinatorMock.filters.RandomWordsFulfilled,
+      // );
     });
 
     it('', async () => {});
@@ -287,8 +326,11 @@ async function enterRaffle(raffle: Raffle) {
   const [, caller] = await ethers.getSigners();
 
   let tx = await raffle.enter({ value: ethers.parseEther('0.5') });
-  tx.wait(1);
+  await tx.wait(1);
+
+  tx = await raffle.enter({ value: ethers.parseEther('1.5') });
+  await tx.wait(1);
 
   tx = await raffle.connect(caller).enter({ value: ethers.parseEther('0.5') });
-  tx.wait(1);
+  await tx.wait(1);
 }
