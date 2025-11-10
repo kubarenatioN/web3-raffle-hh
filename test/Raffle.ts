@@ -254,7 +254,10 @@ describe('Raffle', () => {
 
       const pickWinnerCall = raffle.pickWinnerByOwner();
 
-      expect(pickWinnerCall).to.emit(raffle, 'RaffleRandomWordsRequested');
+      await expect(pickWinnerCall).to.emit(
+        raffle,
+        'RaffleRandomWordsRequested',
+      );
     });
 
     it('should fulfill random words', async () => {
@@ -278,7 +281,7 @@ describe('Raffle', () => {
 
       await enterRaffle(raffle);
 
-      const winnerPicked = new Promise((res, rej) => {
+      const winnerPicked = new Promise<any>((res, rej) => {
         raffle.once(raffle.filters.RaffleWinnerPicked, (winner, round) => {
           res({ winner, round });
         });
@@ -302,6 +305,8 @@ describe('Raffle', () => {
         raffle.filters.RaffleWinnerPicked,
       );
 
+      const playersList = await raffle.s_playersList;
+
       const { winner, round } = await winnerPicked;
       expect(winner).to.exist;
       expect(round).to.equal(0);
@@ -311,14 +316,13 @@ describe('Raffle', () => {
 
       expect(winner2).to.exist;
       expect(round2).to.equal(0);
+      expect(playersList.length).to.equal(0);
 
       // to see if random words were fulfilled
       // const fulfilled = await vrfCoordinatorMock.queryFilter(
       //   vrfCoordinatorMock.filters.RandomWordsFulfilled,
       // );
     });
-
-    it('', async () => {});
   });
 });
 
