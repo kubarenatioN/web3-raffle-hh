@@ -13,6 +13,9 @@ error Raffle__NotEnoughTimePassedToDraw(uint256 timePassed);
 error Raffle__NotEnoughUniquePlayersToDraw(uint256 uniquePlayersCount);
 error Raffle__VRFRequestIdNotMatch(uint256 expectedId, uint256 receivedId);
 
+error Raffle__TooMuchWithdrawAmount(uint256 amount, address sender);
+error Raffle__ErrorWhileWithdraw();
+
 contract Raffle is VRFConsumerBaseV2Plus {
     struct RoundResult {
         uint256 round;
@@ -24,6 +27,8 @@ contract Raffle is VRFConsumerBaseV2Plus {
     event RaffleEntranceFeeUpdated(uint256 oldFee, uint256 newFee);
     event RaffleRandomWordsRequested(uint256 indexed reqId, uint256 round);
     event RaffleWinnerPicked(address winner, uint256 round);
+    event RaffleWinnerFundsSent(address receiver, uint256 amount);
+    event RaffleOwnerFundsSent(address owner, uint256 amount);
 
     enum State {
         OPEN,
@@ -39,7 +44,8 @@ contract Raffle is VRFConsumerBaseV2Plus {
     address[] public s_uniquePlayersList;
 
     RoundResult[] public s_roundsHistory; // winner to win funds amount
-    mapping(uint256 => address) winners; // round number to winner address
+    mapping(uint256 => address) public winners; // round number to winner address
+    mapping(address => uint256) public s_winnerBalance; // balances of winners
 
     uint256 public recentDrawAt;
 
@@ -48,6 +54,8 @@ contract Raffle is VRFConsumerBaseV2Plus {
     uint256 public s_roundsCount = 0;
 
     uint256 public s_totalBalance = 0;
+
+    uint256 public s_ownerCommission = 0;
 
     /// Entrance fee in USD
     uint256 public s_entranceFee;
@@ -182,7 +190,42 @@ contract Raffle is VRFConsumerBaseV2Plus {
         uint256 round = s_roundsCount;
         s_roundsCount += 1;
 
+        uint256 winnerAmount = (s_totalBalance * 80) / 100;
+        uint256 ownerCommissionAmount = s_totalBalance - winnerAmount;
+
+        s_winnerBalance[winner] += winnerAmount;
+        s_ownerCommission += ownerCommissionAmount;
+        s_totalBalance = 0;
+
         emit RaffleWinnerPicked(winner, round);
+    }
+
+    function withdraw(uint256 amount) public {
+        if (amount > s_winnerBalance[msg.sender]) {
+            revert Raffle__TooMuchWithdrawAmount(amount, msg.sender);
+        }
+
+        s_winnerBalance[msg.sender] -= amount;
+
+        (bool success, ) = payable(msg.sender).call{value: amount}("");
+        if (!success) {
+            revert Raffle__ErrorWhileWithdraw();
+        }
+
+        emit RaffleWinnerFundsSent(msg.sender, amount);
+    }
+
+    function withdrawOwner() public onlyOwner_ {
+        uint256 amount = s_ownerCommission;
+
+        s_ownerCommission = 0;
+
+        (bool success, ) = payable(msg.sender).call{value: amount}("");
+        if (!success) {
+            revert Raffle__ErrorWhileWithdraw();
+        }
+
+        emit RaffleOwnerFundsSent(i_owner, amount);
     }
 
     function updateEntranceFee(uint256 _val) public onlyOwner_ {

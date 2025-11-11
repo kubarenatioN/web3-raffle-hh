@@ -71,6 +71,48 @@ async function deployRaffleFixture() {
   return { raffle, mockV3Aggregator, subId };
 }
 
+async function prepareRaffleToPickWinnerFixture() {
+  const { mockV3Aggregator, vrfCoordinator, subId } =
+    await prepareDependencies();
+
+  const dataFeedAddress = await mockV3Aggregator.getAddress();
+  const vrfCoordinatorAddress = await vrfCoordinator.getAddress();
+
+  const fee = 10; // in USD
+  const drawInterval = 12 * 3600; // 12 hours
+
+  const args = [
+    fee,
+    dataFeedAddress,
+    drawInterval,
+    vrfCoordinatorAddress,
+    subId,
+  ];
+  const raffle = await ethers.deployContract('Raffle', args);
+  await raffle.waitForDeployment();
+
+  const tx = await vrfCoordinator.addConsumer(subId.toString(), raffle);
+  await tx.wait(1);
+
+  const vrfCoordinatorMock = await ethers.getContractAt(
+    'VRFCoordinatorV2Mock',
+    vrfCoordinatorAddress,
+  );
+
+  const randomWordsRequestedFilter =
+    raffle.filters.RaffleRandomWordsRequested();
+
+  // to inspect subscriptions
+  // const subs = await vrfCoordinatorMock.getSubscription(
+  //   await raffle.s_subscriptionId(),
+  // );
+  // console.log('vrfCoordinatorMock subs', subs);
+
+  await enterRaffle(raffle);
+
+  return { raffle, vrfCoordinatorMock, randomWordsRequestedFilter };
+}
+
 function deployRaffleFixtureExtra(deployer?: any) {
   return async function _deployRaffleFixtureExtra() {
     const { mockV3Aggregator, vrfCoordinator, subId } =
@@ -261,25 +303,10 @@ describe('Raffle', () => {
     });
 
     it('should fulfill random words', async () => {
-      const { raffle } = await networkHelpers.loadFixture(deployRaffleFixture);
+      const { raffle, vrfCoordinatorMock, randomWordsRequestedFilter } =
+        await networkHelpers.loadFixture(prepareRaffleToPickWinnerFixture);
+
       const raffleAddress = await raffle.getAddress();
-
-      const vrfCoordinatorAddress = await raffle.s_vrfCoordinator();
-      const vrfCoordinatorMock = await ethers.getContractAt(
-        'VRFCoordinatorV2Mock',
-        vrfCoordinatorAddress,
-      );
-
-      const randomWordsRequestedFilter =
-        raffle.filters.RaffleRandomWordsRequested();
-
-      // to inspect subscriptions
-      // const subs = await vrfCoordinatorMock.getSubscription(
-      //   await raffle.s_subscriptionId(),
-      // );
-      // console.log('vrfCoordinatorMock subs', subs);
-
-      await enterRaffle(raffle);
 
       const winnerPicked = new Promise<any>((res, rej) => {
         raffle.once(raffle.filters.RaffleWinnerPicked, (winner, round) => {
@@ -324,6 +351,76 @@ describe('Raffle', () => {
       // );
     });
   });
+
+  describe('Withdrawing funds', () => {
+    it('should correct withdraw winner amount', async () => {
+      const { raffle, vrfCoordinatorMock, randomWordsRequestedFilter } =
+        await networkHelpers.loadFixture(prepareRaffleToPickWinnerFixture);
+
+      const raffleAddress = await raffle.getAddress();
+
+      const pickWinnerTx = await raffle.pickWinnerByOwner();
+      await pickWinnerTx.wait(1);
+
+      const wordsReqEvents = await raffle.queryFilter(
+        randomWordsRequestedFilter,
+      );
+      const reqId = wordsReqEvents[0].args[0];
+
+      const fulfillTx = await vrfCoordinatorMock.fulfillRandomWords(
+        reqId,
+        raffleAddress,
+      );
+      await fulfillTx.wait(1);
+
+      const [winnerPickedEvent] = await raffle.queryFilter(
+        raffle.filters.RaffleWinnerPicked,
+      );
+
+      const [winner] = winnerPickedEvent.args;
+
+      const amountToWithdraw = ethers.parseEther('0.5');
+
+      const raffleBalanceBefore =
+        await ethers.provider.getBalance(raffleAddress);
+
+      const ownerCommission = await raffle.s_ownerCommission();
+
+      const winnerAmountBefore = await raffle.s_winnerBalance(winner);
+
+      const winnerSig = await ethers.getSigner(winner);
+      const withdrawTx = await raffle
+        .connect(winnerSig)
+        .withdraw(amountToWithdraw);
+
+      const winnerAmountAfter = await raffle.s_winnerBalance(winner);
+      const raffleBalanceAfter =
+        await ethers.provider.getBalance(raffleAddress);
+
+      const remainingAmount = winnerAmountBefore - amountToWithdraw;
+      const remainingRaffleBalance = raffleBalanceBefore - amountToWithdraw;
+
+      expect(withdrawTx)
+        .to.emit(raffle, 'RaffleWinnerFundsSent')
+        .withArgs(winner, amountToWithdraw);
+      expect(winnerAmountAfter).to.eq(remainingAmount);
+      expect(raffleBalanceAfter).to.eq(remainingRaffleBalance);
+
+      await expect(
+        raffle.connect(winnerSig).withdraw(ethers.parseEther('2')),
+      ).to.revertedWithCustomError(raffle, 'Raffle__TooMuchWithdrawAmount');
+
+      // test 20% commission to owner
+      expect(ownerCommission).to.eq((raffleBalanceBefore * 20n) / 100n);
+
+      const raffleOwner = await raffle.i_owner();
+      const ownerWithdrawTx = await raffle.withdrawOwner();
+
+      expect(ownerWithdrawTx)
+        .to.emit(raffle, 'RaffleOwnerFundsSent')
+        .withArgs(raffleOwner, ownerCommission);
+    });
+  });
 });
 
 async function enterRaffle(raffle: Raffle) {
@@ -332,9 +429,9 @@ async function enterRaffle(raffle: Raffle) {
   let tx = await raffle.enter({ value: ethers.parseEther('0.5') });
   await tx.wait(1);
 
-  tx = await raffle.enter({ value: ethers.parseEther('1.5') });
+  tx = await raffle.enter({ value: ethers.parseEther('0.5') });
   await tx.wait(1);
 
-  tx = await raffle.connect(caller).enter({ value: ethers.parseEther('0.5') });
+  tx = await raffle.connect(caller).enter({ value: ethers.parseEther('1.5') });
   await tx.wait(1);
 }
