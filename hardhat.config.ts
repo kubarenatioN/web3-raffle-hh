@@ -1,6 +1,8 @@
 import type { HardhatUserConfig } from 'hardhat/config';
 
 import hardhatToolboxMochaEthersPlugin from '@nomicfoundation/hardhat-toolbox-mocha-ethers';
+import 'dotenv/config';
+import { CHAINS_CONFIG } from './networks.config';
 
 const config: HardhatUserConfig = {
   plugins: [hardhatToolboxMochaEthersPlugin],
@@ -14,7 +16,35 @@ const config: HardhatUserConfig = {
       },
     ],
   },
-  networks: {},
+  networks: {
+    localhost: {
+      type: 'edr-simulated',
+    },
+    sepolia: {
+      type: 'http',
+      url: CHAINS_CONFIG.sepolia.url,
+      accounts: CHAINS_CONFIG.sepolia.accounts,
+      chainId: 11155111,
+    },
+  },
+  verify: {
+    etherscan: {
+      apiKey: process.env.ETHERSCAN_API_KEY,
+    },
+  },
+  chainDescriptors: {
+    11155111: {
+      name: 'Sepolia',
+      blockExplorers: {
+        etherscan: {
+          url: 'https://sepolia.etherscan.io',
+          apiUrl: 'https://api.etherscan.io/v2/api',
+        },
+      },
+    },
+  },
 };
 
 export default config;
+
+// 0x64D915bFb72F65afBEC169b248EC6EeBfe9f7372

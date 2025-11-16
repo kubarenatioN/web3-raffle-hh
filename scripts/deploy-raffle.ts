@@ -1,22 +1,48 @@
 import { network } from 'hardhat';
 import MockV3Aggregator from '../ignition/modules/MockV3Aggregator';
+import { CHAINS_CONFIG } from '../networks.config';
 import { deployVrfCoordinator } from './mocks/vrf-coordinator';
 
+const { ethers, ignition, networkName, networkConfig } =
+  await network.connect();
+
 async function main() {
-  const { ethers, ignition, networkName } = await network.connect();
-
   // console.log('networkName:', networkName);
+  const isLocalNetwork = networkName === 'localhost';
 
-  const { mockV3Aggregator } = await ignition.deploy(MockV3Aggregator);
-  mockV3Aggregator.waitForDeployment();
+  let dataFeed = ''; // address
+  let vrfCoordinator = ''; // address
+  let subscriptionId = ''; // uint256
+  let enterFeePriceUsd = 10;
+  let drawInterval = 120; // seconds
 
-  const dataFeedAddress = await mockV3Aggregator.getAddress();
+  if (isLocalNetwork) {
+    const { mockV3Aggregator, vrfCoordinatorMock } = await prepareMocks();
 
-  const { vrfCoordinatorMock } = await deployVrfCoordinator();
+    const dataFeedAddress = await mockV3Aggregator.getAddress();
+    const vrfCoordinatorAddress = await vrfCoordinatorMock.getAddress();
 
-  const vrfCoordinatorAddress = await vrfCoordinatorMock.getAddress();
+    dataFeed = dataFeedAddress;
+    vrfCoordinator = vrfCoordinatorAddress;
+  } else {
+    // Testnet info
+    if (networkName === 'sepolia') {
+      const config = CHAINS_CONFIG.sepolia;
+      dataFeed = '';
+      vrfCoordinator = '';
+      subscriptionId = '';
+    } else {
+      throw new Error('Network is not configured');
+    }
+  }
 
-  const args = ['10', dataFeedAddress, 120, vrfCoordinatorAddress, '123'];
+  const args = [
+    enterFeePriceUsd.toString(),
+    dataFeed,
+    drawInterval,
+    vrfCoordinator,
+    subscriptionId,
+  ];
   const raffle = await ethers.deployContract('Raffle', args);
   await raffle.waitForDeployment();
 
@@ -24,3 +50,12 @@ async function main() {
 }
 
 main().catch(console.error);
+
+async function prepareMocks() {
+  const { mockV3Aggregator } = await ignition.deploy(MockV3Aggregator);
+  mockV3Aggregator.waitForDeployment();
+
+  const { vrfCoordinatorMock } = await deployVrfCoordinator();
+
+  return { mockV3Aggregator, vrfCoordinatorMock };
+}

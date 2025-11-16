@@ -61,7 +61,8 @@ contract Raffle is VRFConsumerBaseV2Plus {
     uint256 public s_entranceFee;
 
     uint256 public s_subscriptionId;
-    // ???
+
+    // 500 gwei
     bytes32 s_keyHash =
         0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
     uint32 callbackGasLimit = 500000; // Increased for complex operations

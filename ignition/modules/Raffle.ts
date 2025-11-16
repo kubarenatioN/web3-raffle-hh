@@ -1,47 +1,19 @@
 import { buildModule } from '@nomicfoundation/hardhat-ignition/modules';
-import { ethers } from 'ethers';
-import MockV3Aggregator from './MockV3Aggregator';
-import VRFCoordinatorV2Mock from './VRFCoordinatorV2Mock';
+
+const ETH_USD_SEPOLIA_PRICE_FEED = '0x694AA1769357215DE4FAC081bf1f309aDC325306';
+const VRF_COORDINATOR_SEPOLIA = '0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B';
+const VRF_SUB_ID_SEPOLIA =
+  '50035700052798166475670216671852621529237252777743009115022297327204454668481';
 
 export default buildModule('Raffle', (m) => {
-  const { mockV3Aggregator } = m.useModule(MockV3Aggregator);
-
-  const { vrfCoordinatorMock } = m.useModule(VRFCoordinatorV2Mock);
-
-  // for local dev - create subscription and extract ID from event
-  const createSubCall = m.call(vrfCoordinatorMock, 'createSubscription', []);
-  const subscriptionId = m.readEventArgument(
-    createSubCall,
-    'SubscriptionCreated',
-    'subId',
-    {
-      emitter: vrfCoordinatorMock,
-    },
-  );
-
   const args = [
-    '10',
-    mockV3Aggregator,
+    '5',
+    ETH_USD_SEPOLIA_PRICE_FEED,
     120,
-    vrfCoordinatorMock,
-    subscriptionId,
+    VRF_COORDINATOR_SEPOLIA,
+    VRF_SUB_ID_SEPOLIA,
   ];
   const raffle = m.contract('Raffle', args);
-
-  // Add raffle contract as a consumer to the subscription
-  const addConsumerFuture = m.call(vrfCoordinatorMock, 'addConsumer', [
-    subscriptionId,
-    raffle,
-  ]);
-
-  m.call(
-    vrfCoordinatorMock,
-    'fundSubscription',
-    [subscriptionId, ethers.parseEther('1')],
-    {
-      after: [addConsumerFuture],
-    },
-  );
 
   return { raffle };
 });

@@ -1,5 +1,5 @@
 import { network } from 'hardhat';
-import Raffle from '../ignition/modules/Raffle';
+import RaffleLocal from '../ignition/modules/Raffle.local';
 
 const { ethers, ignition, networkName } = await network.connect();
 
@@ -22,7 +22,7 @@ async function main() {
 }
 
 async function main2() {
-  const { raffle: raffleBase } = await ignition.deploy(Raffle);
+  const { raffle: raffleBase } = await ignition.deploy(RaffleLocal);
 
   // Get the typed contract by getting the address and using getContractAt
   const raffleAddress = await raffleBase.getAddress();
