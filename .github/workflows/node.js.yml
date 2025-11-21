@@ -3,6 +3,11 @@
 
 name: Node.js CI
 
+# Workflow level
+env:
+  IS_CI: "true"
+  SEPOLIA_RPC_URL: ${{ secrets.SEPOLIA_RPC_URL }}
+
 on:
   push:
     branches: [ "main" ]

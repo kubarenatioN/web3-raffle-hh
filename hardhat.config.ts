@@ -4,6 +4,8 @@ import hardhatToolboxMochaEthersPlugin from '@nomicfoundation/hardhat-toolbox-mo
 import 'dotenv/config';
 import { CHAINS_CONFIG } from './networks.config';
 
+const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
+
 const config: HardhatUserConfig = {
   plugins: [hardhatToolboxMochaEthersPlugin],
   solidity: {
@@ -28,9 +30,11 @@ const config: HardhatUserConfig = {
     },
   },
   verify: {
-    etherscan: {
-      apiKey: process.env.ETHERSCAN_API_KEY,
-    },
+    etherscan: ETHERSCAN_API_KEY
+      ? {
+          apiKey: ETHERSCAN_API_KEY,
+        }
+      : undefined,
   },
   chainDescriptors: {
     11155111: {
