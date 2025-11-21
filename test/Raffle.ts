@@ -1,9 +1,8 @@
 import { expect } from 'chai';
 import hre from 'hardhat';
-import { Raffle } from '../types/ethers-contracts';
+import type { Raffle } from '../types/ethers-contracts';
 
-const { ethers, networkConfig, networkName, networkHelpers } =
-  await hre.network.connect();
+const { ethers, networkHelpers } = await hre.network.connect();
 
 async function deployMockV3Aggregator() {
   const initialAnswer = 3_800n * 10n ** 8n; // add 8 decimals to actual ETH price
