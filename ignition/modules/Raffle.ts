@@ -6,10 +6,13 @@ const VRF_SUB_ID_SEPOLIA =
   '50035700052798166475670216671852621529237252777743009115022297327204454668481';
 
 export default buildModule('Raffle', (m) => {
+  const entranceFee = 5; // in USD
+  const drawInterval = 60 * 3; // in seconds
+
   const args = [
-    '5',
+    entranceFee,
     ETH_USD_SEPOLIA_PRICE_FEED,
-    120,
+    drawInterval,
     VRF_COORDINATOR_SEPOLIA,
     VRF_SUB_ID_SEPOLIA,
   ];

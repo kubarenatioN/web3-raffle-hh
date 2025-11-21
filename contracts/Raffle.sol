@@ -12,6 +12,7 @@ error Raffle__InvalidDataFeedAnswer(int256 answer);
 error Raffle__NotEnoughTimePassedToDraw(uint256 timePassed);
 error Raffle__NotEnoughUniquePlayersToDraw(uint256 uniquePlayersCount);
 error Raffle__VRFRequestIdNotMatch(uint256 expectedId, uint256 receivedId);
+error Raffle__WaitingForCalculation();
 
 error Raffle__TooMuchWithdrawAmount(uint256 amount, address sender);
 error Raffle__ErrorWhileWithdraw();
@@ -32,7 +33,6 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
     enum State {
         OPEN,
-        CLOSED, // do I need this?
         CALCULATING
     }
 
@@ -47,7 +47,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     mapping(uint256 => address) public winners; // round number to winner address
     mapping(address => uint256) public s_winnerBalance; // balances of winners
 
-    uint256 public recentDrawAt;
+    uint256 public s_recentDrawAt;
 
     uint256 public s_waitingRequestId;
 
@@ -63,7 +63,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     uint256 public s_subscriptionId;
 
     // 500 gwei
-    bytes32 s_keyHash =
+    bytes32 public immutable i_keyHash =
         0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
     uint32 callbackGasLimit = 500000; // Increased for complex operations
     uint16 requestConfirmations = 3;
@@ -84,7 +84,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
         s_entranceFee = _entranceFeeUsd;
         i_owner = msg.sender;
         i_drawInterval = _drawInterval;
-        recentDrawAt = 0;
+        s_recentDrawAt = 0;
         i_dataFeed = AggregatorV3Interface(_dataFeed);
         s_subscriptionId = _subId;
     }
@@ -128,6 +128,10 @@ contract Raffle is VRFConsumerBaseV2Plus {
     }
 
     function pickWinnerByOwner() public onlyOwner_ returns (uint256 requestId) {
+        if (s_state == State.CALCULATING) {
+            revert Raffle__WaitingForCalculation();
+        }
+
         uint256 timePassed = timePassedSinceRecentDraw();
         if (timePassed < i_drawInterval) {
             revert Raffle__NotEnoughTimePassedToDraw(timePassed);
@@ -144,7 +148,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
         // send money to a winner and commission to the Raffle owner
         requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
-                keyHash: s_keyHash,
+                keyHash: i_keyHash,
                 subId: s_subscriptionId,
                 requestConfirmations: requestConfirmations,
                 callbackGasLimit: callbackGasLimit,
@@ -174,13 +178,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
         uint256 index = randomWords[0] % s_playersList.length;
         address winner = s_playersList[index];
-        RoundResult memory result = RoundResult({
-            round: s_roundsCount,
-            winner: winner,
-            amount: 100 // update this value
-        });
 
-        s_roundsHistory.push(result);
         winners[s_roundsCount] = winner;
 
         // delete s_playersList;
@@ -197,6 +195,16 @@ contract Raffle is VRFConsumerBaseV2Plus {
         s_winnerBalance[winner] += winnerAmount;
         s_ownerCommission += ownerCommissionAmount;
         s_totalBalance = 0;
+
+        RoundResult memory result = RoundResult({
+            round: round,
+            winner: winner,
+            amount: winnerAmount
+        });
+        s_roundsHistory.push(result);
+
+        s_recentDrawAt = block.timestamp;
+        s_waitingRequestId = 0;
 
         emit RaffleWinnerPicked(winner, round);
     }
@@ -237,7 +245,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     }
 
     function timePassedSinceRecentDraw() public view returns (uint256) {
-        return block.timestamp - recentDrawAt;
+        return block.timestamp - s_recentDrawAt;
     }
 
     function getPlayerSlotsCount() public view returns (uint256) {

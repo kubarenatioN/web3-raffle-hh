@@ -53,7 +53,7 @@ async function deployRaffleFixture() {
   const vrfCoordinatorAddress = await vrfCoordinator.getAddress();
 
   const fee = 10; // in USD
-  const drawInterval = 12 * 3600; // 12 hours
+  const drawInterval = 120;
 
   const args = [
     fee,
@@ -79,7 +79,7 @@ async function prepareRaffleToPickWinnerFixture() {
   const vrfCoordinatorAddress = await vrfCoordinator.getAddress();
 
   const fee = 10; // in USD
-  const drawInterval = 12 * 3600; // 12 hours
+  const drawInterval = 120; // 120 seconds
 
   const args = [
     fee,
@@ -90,6 +90,7 @@ async function prepareRaffleToPickWinnerFixture() {
   ];
   const raffle = await ethers.deployContract('Raffle', args);
   await raffle.waitForDeployment();
+  const raffleAddress = await raffle.getAddress();
 
   const tx = await vrfCoordinator.addConsumer(subId.toString(), raffle);
   await tx.wait(1);
@@ -110,7 +111,12 @@ async function prepareRaffleToPickWinnerFixture() {
 
   await enterRaffle(raffle);
 
-  return { raffle, vrfCoordinatorMock, randomWordsRequestedFilter };
+  return {
+    raffle,
+    raffleAddress,
+    vrfCoordinatorMock,
+    randomWordsRequestedFilter,
+  };
 }
 
 function deployRaffleFixtureExtra(deployer?: any) {
@@ -122,7 +128,7 @@ function deployRaffleFixtureExtra(deployer?: any) {
     const vrfCoordinatorAddress = await vrfCoordinator.getAddress();
 
     const fee = 10; // in USD
-    const drawInterval = 12 * 3600; // 12 hours
+    const drawInterval = 120; // 120 seconds
 
     const args = [
       fee,
@@ -278,6 +284,47 @@ describe('Raffle', () => {
         'Raffle__NotEnoughFeeSent',
       );
     });
+
+    it('should not allow enter, if not enough time passed', async () => {
+      const { raffle, vrfCoordinatorMock, raffleAddress } =
+        await networkHelpers.loadFixture(prepareRaffleToPickWinnerFixture);
+
+      let pickWinnerTx = await raffle.pickWinnerByOwner();
+      await pickWinnerTx.wait(1);
+
+      const reqId = 1n;
+
+      // fulfill random words
+      await vrfCoordinatorMock.fulfillRandomWords(reqId, raffleAddress);
+
+      const waitingReqId = await raffle.s_waitingRequestId();
+      expect(waitingReqId).to.eq(0);
+
+      await expect(raffle.pickWinnerByOwner()).to.revertedWithCustomError(
+        raffle,
+        'Raffle__NotEnoughTimePassedToDraw',
+      );
+
+      const waitTimeSeconds = 60;
+      await networkHelpers.time.increase(waitTimeSeconds); // add 60
+
+      const onchainTimePassed = await raffle.timePassedSinceRecentDraw();
+      expect(onchainTimePassed).to.eq(waitTimeSeconds);
+
+      await expect(raffle.pickWinnerByOwner()).to.revertedWithCustomError(
+        raffle,
+        'Raffle__NotEnoughTimePassedToDraw',
+      );
+
+      await networkHelpers.time.increase(waitTimeSeconds);
+
+      await enterRaffle(raffle);
+
+      expect(await raffle.pickWinnerByOwner()).to.emit(
+        raffle,
+        'RaffleRandomWordsRequested',
+      );
+    });
   });
 
   describe('VRF Coordinator', () => {
@@ -303,10 +350,12 @@ describe('Raffle', () => {
     });
 
     it('should fulfill random words', async () => {
-      const { raffle, vrfCoordinatorMock, randomWordsRequestedFilter } =
-        await networkHelpers.loadFixture(prepareRaffleToPickWinnerFixture);
-
-      const raffleAddress = await raffle.getAddress();
+      const {
+        raffle,
+        raffleAddress,
+        vrfCoordinatorMock,
+        randomWordsRequestedFilter,
+      } = await networkHelpers.loadFixture(prepareRaffleToPickWinnerFixture);
 
       const winnerPicked = new Promise<any>((res, rej) => {
         raffle.once(raffle.filters.RaffleWinnerPicked, (winner, round) => {
@@ -354,10 +403,12 @@ describe('Raffle', () => {
 
   describe('Withdrawing funds', () => {
     it('should correct withdraw winner amount', async () => {
-      const { raffle, vrfCoordinatorMock, randomWordsRequestedFilter } =
-        await networkHelpers.loadFixture(prepareRaffleToPickWinnerFixture);
-
-      const raffleAddress = await raffle.getAddress();
+      const {
+        raffle,
+        raffleAddress,
+        vrfCoordinatorMock,
+        randomWordsRequestedFilter,
+      } = await networkHelpers.loadFixture(prepareRaffleToPickWinnerFixture);
 
       const pickWinnerTx = await raffle.pickWinnerByOwner();
       await pickWinnerTx.wait(1);

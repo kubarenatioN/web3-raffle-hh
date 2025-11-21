@@ -46,5 +46,3 @@ const config: HardhatUserConfig = {
 };
 
 export default config;
-
-// 0x64D915bFb72F65afBEC169b248EC6EeBfe9f7372
