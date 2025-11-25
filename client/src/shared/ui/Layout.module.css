@@ -1,0 +1,15 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+  background-color: #fafafa;
+}
+
+.main {
+  flex: 1 0 max-content;
+  padding: 0 1rem;
+}
+
+.footer {
+  padding: 1rem;
+}
