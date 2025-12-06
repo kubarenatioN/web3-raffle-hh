@@ -53,7 +53,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
     AggregatorV3Interface internal immutable i_dataFeed;
 
-    PlayerEntry[] public s_playersListExtended;
+    PlayerEntry[] public s_playersListExtended; // probably don't need this at all...
     address[] public s_playersList;
     address[] public s_uniquePlayersList;
 
@@ -130,16 +130,13 @@ contract Raffle is VRFConsumerBaseV2Plus {
             }
         }
 
-        PlayerEntry memory playerExtended = PlayerEntry({
-            _address: _sender,
-            _amount: _value
-        });
-
         if (!alreadyIncludedOnce) {
             s_uniquePlayersList.push(_sender);
         }
         s_playersList.push(_sender);
-        s_playersListExtended.push(playerExtended);
+        s_playersListExtended.push(
+            PlayerEntry({_address: _sender, _amount: _value})
+        );
         s_totalBalance += _value;
 
         emit RaffleEntered(_sender, _value);
@@ -211,10 +208,11 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
         winners[s_roundsCount] = winner;
 
-        // delete s_playersList;
-        s_playersList = new address[](0);
-        s_playersListExtended = new PlayerEntry[](0);
-        s_uniquePlayersList = new address[](0);
+        // clear arrays
+        delete s_playersList;
+        delete s_playersListExtended;
+        delete s_uniquePlayersList;
+
         s_state = State.OPEN;
 
         uint256 round = s_roundsCount;
@@ -301,6 +299,10 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
     function getTotalDrawsCount() public view returns (uint256) {
         return s_roundsHistory.length;
+    }
+
+    function getDataFeedAddress() public view returns (address) {
+        return address(i_dataFeed);
     }
 
     // ============ Pagination Functions ============
