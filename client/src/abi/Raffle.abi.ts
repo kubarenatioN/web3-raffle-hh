@@ -69,6 +69,16 @@ export const raffleAbi = [
   },
   {
     inputs: [],
+    name: 'PaginationLib__InvalidPageSize',
+    type: 'error',
+  },
+  {
+    inputs: [],
+    name: 'PaginationLib__PageNumberOutOfRange',
+    type: 'error',
+  },
+  {
+    inputs: [],
     name: 'Raffle__ErrorWhileWithdraw',
     type: 'error',
   },
@@ -130,6 +140,17 @@ export const raffleAbi = [
       },
     ],
     name: 'Raffle__OnlyOwner',
+    type: 'error',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'pageSize',
+        type: 'uint256',
+      },
+    ],
+    name: 'Raffle__TooLargePageSize',
     type: 'error',
   },
   {
@@ -335,6 +356,18 @@ export const raffleAbi = [
         name: 'round',
         type: 'uint256',
       },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'fundsDrawn',
+        type: 'uint256',
+      },
+      {
+        indexed: false,
+        internalType: 'uint256',
+        name: 'participantsCount',
+        type: 'uint256',
+      },
     ],
     name: 'RaffleWinnerPicked',
     type: 'event',
@@ -351,6 +384,19 @@ export const raffleAbi = [
     name: 'enter',
     outputs: [],
     stateMutability: 'payable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'getDataFeedAddress',
+    outputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
     type: 'function',
   },
   {
@@ -380,6 +426,110 @@ export const raffleAbi = [
     type: 'function',
   },
   {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'page',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'pageSize',
+        type: 'uint256',
+      },
+    ],
+    name: 'getRoundsHistoryPage',
+    outputs: [
+      {
+        components: [
+          {
+            internalType: 'uint256',
+            name: 'round',
+            type: 'uint256',
+          },
+          {
+            internalType: 'address',
+            name: 'winner',
+            type: 'address',
+          },
+          {
+            internalType: 'uint256',
+            name: 'amount',
+            type: 'uint256',
+          },
+        ],
+        internalType: 'struct Raffle.RoundResult[]',
+        name: 'items',
+        type: 'tuple[]',
+      },
+      {
+        components: [
+          {
+            internalType: 'uint256',
+            name: 'currentPage',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'pageSize',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'totalItems',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'totalPages',
+            type: 'uint256',
+          },
+          {
+            internalType: 'bool',
+            name: 'hasNextPage',
+            type: 'bool',
+          },
+          {
+            internalType: 'bool',
+            name: 'hasPreviousPage',
+            type: 'bool',
+          },
+        ],
+        internalType: 'struct PaginationLib.PageMetadata',
+        name: 'metadata',
+        type: 'tuple',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'getTotalDrawsCount',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'getTotalFundsDrawn',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
     inputs: [],
     name: 'getUniquePlayersCount',
     outputs: [
@@ -387,6 +537,67 @@ export const raffleAbi = [
         internalType: 'uint256',
         name: '',
         type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: 'page',
+        type: 'uint256',
+      },
+      {
+        internalType: 'uint256',
+        name: 'pageSize',
+        type: 'uint256',
+      },
+    ],
+    name: 'getUniquePlayersPage',
+    outputs: [
+      {
+        internalType: 'address[]',
+        name: 'players',
+        type: 'address[]',
+      },
+      {
+        components: [
+          {
+            internalType: 'uint256',
+            name: 'currentPage',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'pageSize',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'totalItems',
+            type: 'uint256',
+          },
+          {
+            internalType: 'uint256',
+            name: 'totalPages',
+            type: 'uint256',
+          },
+          {
+            internalType: 'bool',
+            name: 'hasNextPage',
+            type: 'bool',
+          },
+          {
+            internalType: 'bool',
+            name: 'hasPreviousPage',
+            type: 'bool',
+          },
+        ],
+        internalType: 'struct PaginationLib.PageMetadata',
+        name: 'metadata',
+        type: 'tuple',
       },
     ],
     stateMutability: 'view',
@@ -521,6 +732,30 @@ export const raffleAbi = [
     type: 'function',
   },
   {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    name: 's_playersListExtended',
+    outputs: [
+      {
+        internalType: 'address',
+        name: '_address',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: '_amount',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
     inputs: [],
     name: 's_recentDrawAt',
     outputs: [
@@ -604,6 +839,19 @@ export const raffleAbi = [
   {
     inputs: [],
     name: 's_totalBalance',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 's_totalFundsDrawn',
     outputs: [
       {
         internalType: 'uint256',

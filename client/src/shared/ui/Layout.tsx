@@ -1,4 +1,4 @@
-import { useConnection, useDisconnect } from 'wagmi';
+import ConnectWalletBtn from './ConnectWalletBtn/ConnectWalletBtn';
 import styles from './Layout.module.css';
 
 interface LayoutProps {
@@ -6,12 +6,7 @@ interface LayoutProps {
 }
 
 function Layout({ children }: LayoutProps) {
-  const { chain, address } = useConnection();
-  const { disconnect } = useDisconnect();
-
-  const addressPretty = address
-    ? `${address.substring(0, 6)}...${address.substring(address.length - 5)}`
-    : null;
+  console.log('Layout called');
 
   return (
     <>
@@ -21,27 +16,7 @@ function Layout({ children }: LayoutProps) {
         </div>
 
         <div>
-          {chain && (
-            <div>
-              <span>
-                Chain: {chain.name} ({chain.id})
-              </span>
-            </div>
-          )}
-          {addressPretty && (
-            <>
-              <div>
-                <span>{addressPretty ? addressPretty : '-'}</span>
-                <button
-                  onClick={() => {
-                    disconnect();
-                  }}
-                >
-                  Logout
-                </button>
-              </div>
-            </>
-          )}
+          <ConnectWalletBtn />
         </div>
       </header>
 

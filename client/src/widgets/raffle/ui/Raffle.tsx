@@ -1,18 +1,20 @@
-import { useCallback, useMemo, useState } from 'react';
-import { formatEther, parseEther } from 'viem';
+import { raffleContract } from '@/shared/config/contracts';
+import RaffleHistory from '@/widgets/draws-history/ui/RaffleHistory';
+import CurrentRound from '@/widgets/raffle-current-round/ui/CurrentRound';
+import Dashboard from '@/widgets/raffle-stats-dashboard/ui/Dashboard';
+import { useCallback } from 'react';
 import {
   useConnection,
   useReadContract,
-  useReadContracts,
   useWatchContractEvent,
   useWriteContract,
 } from 'wagmi';
-import { raffleContract } from '../../../shared/config/contracts';
 
 function Raffle() {
   const { address } = useConnection();
   const { writeContract, isPending: pendingWrite } = useWriteContract();
-  const [bidAmount, setBidAmount] = useState<number | null>(null);
+
+  console.log('-- Raffle Component called');
 
   const { data: raffleOwner } = useReadContract({
     ...raffleContract,
@@ -26,123 +28,40 @@ function Raffle() {
     enabled: true,
   });
 
-  const { data: readData } = useReadContracts({
-    contracts: [
-      {
-        ...raffleContract,
-        functionName: 'getPlayerSlotsCount',
-      },
-      {
-        ...raffleContract,
-        functionName: 'getUniquePlayersCount',
-      },
-      {
-        ...raffleContract,
-        functionName: 'getFeePriceEth',
-      },
-    ],
-  });
-
-  const [playersCount, uniquePlayersCount, feePriceEthResponse] =
-    readData ?? [];
-
-  // useEffect(() => {
-  //   const res = feePriceEthResponse?.result;
-  //   const feePrice = res ? formatEther(res) : 0;
-
-  //   setBidAmount(Number(feePrice));
-  // }, [feePriceEthResponse]);
-
-  const defaultBidAmount = useMemo(() => {
-    const res = feePriceEthResponse?.result;
-    const feePrice = res ? formatEther(res) : '';
-
-    return feePrice;
-  }, [feePriceEthResponse?.result]);
-
-  const enterRaffle = useCallback(
-    (value: string) => {
-      writeContract({
-        ...raffleContract,
-        functionName: 'enter',
-        args: [],
-        value: parseEther(value),
-      });
-    },
-    [writeContract],
-  );
-
-  const pickWinner = () => {
+  const pickWinner = useCallback(() => {
     writeContract({
       ...raffleContract,
       functionName: 'pickWinnerByOwner',
       args: [],
     });
-  };
+  }, [writeContract]);
 
-  const requestDraw = () => {
-    console.log('requestDraw');
-  };
-
-  const changeBidAmount = (value: string) => {
-    const _decimal = Number(value);
-    if (!Number.isNaN(_decimal)) {
-      setBidAmount(_decimal);
-    }
-  };
-
-  console.log('bidAmount:', bidAmount, defaultBidAmount);
+  // const requestDraw = () => {
+  //   console.log('requestDraw');
+  // };
 
   return (
     <div>
       <div>
-        <h4>Raffle</h4>
-
-        <div>
-          <div>Players count: {playersCount?.result ?? 0}</div>
-          <div>Unique players count: {uniquePlayersCount?.result ?? 0}</div>
-        </div>
+        <Dashboard />
 
         <hr />
-
-        {/* <div>Raffle owner: {raffleOwner ?? 'loading...'}</div> */}
         <div>
-          <div>Fee price: {feePriceEthResponse?.result} ETH</div>
+          <CurrentRound />
+          <div>Right</div>
           <div>
-            <label htmlFor='bid-amount'>Enter your bid amount:</label>
-            <br />
-            <input
-              id='bid-amount'
-              style={{ minWidth: 200 }}
-              type='text'
-              value={bidAmount != null ? bidAmount : defaultBidAmount}
-              onChange={(e) => changeBidAmount(e.target.value)}
-            />
+            <RaffleHistory items={[]} />
           </div>
         </div>
 
-        <div>
-          <button
-            disabled={pendingWrite}
-            onClick={() => enterRaffle(String(bidAmount))}
-          >
-            Enter raffle
-          </button>
-
-          {address && address === raffleOwner ? (
-            <>
-              <button disabled={pendingWrite} onClick={() => pickWinner()}>
-                Pick winner
-              </button>
-            </>
-          ) : address && address !== raffleOwner ? (
-            <>
-              <button disabled={pendingWrite} onClick={() => requestDraw()}>
-                Request raffle draw
-              </button>
-            </>
-          ) : null}
-        </div>
+        <hr />
+        {address === raffleOwner && (
+          <div>
+            <button disabled={pendingWrite} onClick={() => pickWinner()}>
+              Pick winner
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
