@@ -1,6 +1,7 @@
+import { raffleAbi } from '@/abi/Raffle.abi';
 import { raffleContract } from '@/shared/config/contracts';
 import { useEffect, useState } from 'react';
-import { decodeEventLog, parseAbiItem } from 'viem';
+import { decodeEventLog } from 'viem';
 import { usePublicClient } from 'wagmi';
 import { type IRaffleRoundRecord } from './RaffleRoundRecord';
 
@@ -11,30 +12,30 @@ function RaffleHistory({ items }: { items: IRaffleRoundRecord[] }) {
   useEffect(() => {
     const fetchLogs = async () => {
       const _fromBlock = 9720212n;
+      const eventAbi = raffleAbi.find(
+        (item) => item.type === 'event' && item.name === 'RaffleWinnerPicked',
+      );
       const logs = await publicClient.getLogs({
         address: raffleContract.address,
-        // event: raffleAbi.find(
-        //   (item) => item.type === 'event' && item.name === 'RaffleWinnerPicked',
-        // ),
+        event: eventAbi,
         fromBlock: _fromBlock,
         toBlock: _fromBlock + 1000n,
       });
 
-      const eventsAbi = [
-        parseAbiItem(
-          'event RaffleRandomWordsRequested(uint256 indexed reqId, uint256 round)',
-        ),
-        parseAbiItem('event RaffleWinnerPicked(address winner, uint256 round)'),
-        parseAbiItem(
-          'event RaffleEntered(address indexed sender, uint256 amount)',
-        ),
-      ];
       const data = logs.map((event) => {
-        const decoded = decodeEventLog({
-          abi: eventsAbi,
-          data: event.data,
-          topics: event.topics,
-        });
+        let decoded = null;
+        try {
+          decoded = decodeEventLog({
+            abi: [eventAbi],
+            data: event.data,
+            topics: event.topics,
+          });
+        } catch {
+          decoded = null;
+        }
+        if (!decoded) {
+          return null;
+        }
 
         return {
           eventName: decoded.eventName,

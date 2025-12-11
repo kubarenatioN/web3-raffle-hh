@@ -1,6 +1,7 @@
 import { raffleContract } from '@/shared/config/contracts';
 import RaffleHistory from '@/widgets/draws-history/ui/RaffleHistory';
 import CurrentRound from '@/widgets/raffle-current-round/ui/CurrentRound';
+import RaffleParticipants from '@/widgets/raffle-participants/ui/RaffleParticipants';
 import Dashboard from '@/widgets/raffle-stats-dashboard/ui/Dashboard';
 import { useCallback } from 'react';
 import {
@@ -48,13 +49,16 @@ function Raffle() {
         <hr />
         <div>
           <CurrentRound />
-          <div>Right</div>
+          <div>
+            <RaffleParticipants />
+          </div>
           <div>
             <RaffleHistory items={[]} />
           </div>
         </div>
 
         <hr />
+
         {address === raffleOwner && (
           <div>
             <button disabled={pendingWrite} onClick={() => pickWinner()}>
