@@ -32,6 +32,15 @@ contract Raffle is VRFConsumerBaseV2Plus {
         uint256 _amount;
     }
 
+    struct PageMetadata {
+        uint256 currentPage;
+        uint256 pageSize;
+        uint256 totalItems;
+        uint256 totalPages;
+        bool hasNextPage;
+        bool hasPreviousPage;
+    }
+
     event RaffleEntered(address indexed sender, uint256 amount);
     event RaffleEntranceFeeUpdated(uint256 oldFee, uint256 newFee);
     event RaffleRandomWordsRequested(uint256 indexed reqId, uint256 round);
@@ -356,32 +365,44 @@ contract Raffle is VRFConsumerBaseV2Plus {
     )
         public
         view
-        returns (
-            address[] memory players,
-            PaginationLib.PageMetadata memory metadata
-        )
+        returns (address[] memory players, PageMetadata memory metadata)
     {
         if (pageSize >= 100) {
             revert Raffle__TooLargePageSize(pageSize);
         }
 
+        if (pageSize == 0) {
+            revert();
+        }
+
         uint256 totalItems = s_uniquePlayersList.length;
-        metadata = PaginationLib.calculatePageMetadata(
-            totalItems,
-            page,
-            pageSize
-        );
+        uint256 totalPages = (totalItems + pageSize - 1) / pageSize;
 
-        (uint256 startIndex, uint256 endIndex) = PaginationLib.getPageIndices(
-            page,
-            pageSize,
-            totalItems
-        );
+        if (totalPages > 0) {
+            if (page >= totalPages) {
+                revert();
+            }
+        }
 
-        uint256 itemsInPage = endIndex - startIndex;
-        players = new address[](itemsInPage);
+        metadata = PageMetadata({
+            currentPage: page,
+            pageSize: pageSize,
+            totalItems: totalItems,
+            totalPages: totalPages,
+            hasNextPage: totalPages > 0 && page < totalPages - 1,
+            hasPreviousPage: page > 0
+        });
 
-        for (uint256 i = 0; i < itemsInPage; i++) {
+        uint256 startIndex = page * pageSize;
+        uint256 endIndex = startIndex + pageSize;
+        if (endIndex > totalItems) {
+            endIndex = totalItems;
+        }
+
+        uint256 size = endIndex - startIndex;
+        players = new address[](size);
+
+        for (uint256 i = 0; i < size; i++) {
             players[i] = s_uniquePlayersList[startIndex + i];
         }
     }
