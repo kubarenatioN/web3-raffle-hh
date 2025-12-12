@@ -27,11 +27,6 @@ contract Raffle is VRFConsumerBaseV2Plus {
         uint256 amount;
     }
 
-    struct PlayerEntry {
-        address _address;
-        uint256 _amount;
-    }
-
     struct PageMetadata {
         uint256 currentPage;
         uint256 pageSize;
@@ -62,7 +57,6 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
     AggregatorV3Interface internal immutable i_dataFeed;
 
-    PlayerEntry[] public s_playersListExtended; // probably don't need this at all...
     address[] public s_playersList;
     address[] public s_uniquePlayersList;
 
@@ -143,9 +137,6 @@ contract Raffle is VRFConsumerBaseV2Plus {
             s_uniquePlayersList.push(_sender);
         }
         s_playersList.push(_sender);
-        s_playersListExtended.push(
-            PlayerEntry({_address: _sender, _amount: _value})
-        );
         s_totalBalance += _value;
 
         emit RaffleEntered(_sender, _value);
@@ -219,7 +210,6 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
         // clear arrays
         delete s_playersList;
-        delete s_playersListExtended;
         delete s_uniquePlayersList;
 
         s_state = State.OPEN;
