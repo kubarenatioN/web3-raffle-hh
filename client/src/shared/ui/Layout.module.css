@@ -1,0 +1,17 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+  background-color: #fafafa;
+}
+
+.main {
+  flex: 1 0 max-content;
+  padding: 0 1rem 2rem;
+}
+
+.footer {
+  padding: 1rem;
+  background-color: #2c2d33;
+  color: #fff;
+}
