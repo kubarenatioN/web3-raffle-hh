@@ -3,10 +3,15 @@ import { styled } from '@/stitches.config';
 export const Button = styled('button', {
   font: 'unset',
   border: 'none',
-  borderRadius: '9999px',
+  borderRadius: '8px',
   backgroundColor: 'transparent',
   color: 'inherit',
   cursor: 'pointer',
+
+  '&[disabled]': {
+    cursor: 'not-allowed',
+    opacity: 0.6,
+  },
 
   variants: {
     variant: {
@@ -21,12 +26,12 @@ export const Button = styled('button', {
     },
     size: {
       md: {
-        padding: '0.5rem 1rem',
-        fontSize: '1rem',
+        padding: '0.6rem 1.2rem',
+        fontSize: '0.96rem',
       },
       lg: {
-        padding: '1rem 2rem',
-        fontSize: '1.125rem',
+        padding: '0.8rem 1.6rem',
+        fontSize: '1.08rem',
       },
     },
   },

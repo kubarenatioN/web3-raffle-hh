@@ -1,14 +1,29 @@
+import { Box } from '@/shared/ui-kit/Box';
+import { Text } from '@/shared/ui-kit/Typography';
 import ConnectWalletBtn from '@/shared/ui/ConnectWalletBtn/ConnectWalletBtn';
+import { ExternalLink, Trophy } from 'lucide-react';
 import styles from './Header.module.css';
 
 function Header() {
   return (
     <header className={styles.header}>
       <div className={styles.container}>
-        <div>
-          <h4 style={{ margin: 0 }}>ETH Raffle</h4>
-          <span>Powered by ChainLink VRF</span>
-        </div>
+        <Box css={{ gap: 8, alignItems: 'center' }}>
+          <Trophy />
+          <div>
+            <h3 style={{ margin: 0 }}>ETH Raffle</h3>
+            <Text as='span' size='sm'>
+              Powered by{' '}
+              <a
+                href='https://docs.chain.link/vrf'
+                target='_blank'
+                rel='noopener noreferrer'
+              >
+                ChainLink VRF <ExternalLink size={12} />
+              </a>
+            </Text>
+          </div>
+        </Box>
 
         <div>
           <ConnectWalletBtn />

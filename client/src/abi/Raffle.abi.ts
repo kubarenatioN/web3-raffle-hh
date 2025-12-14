@@ -595,7 +595,7 @@ export const raffleAbi = [
             type: 'bool',
           },
         ],
-        internalType: 'struct PaginationLib.PageMetadata',
+        internalType: 'struct Raffle.PageMetadata',
         name: 'metadata',
         type: 'tuple',
       },
@@ -726,30 +726,6 @@ export const raffleAbi = [
         internalType: 'address',
         name: '',
         type: 'address',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
-    ],
-    name: 's_playersListExtended',
-    outputs: [
-      {
-        internalType: 'address',
-        name: '_address',
-        type: 'address',
-      },
-      {
-        internalType: 'uint256',
-        name: '_amount',
-        type: 'uint256',
       },
     ],
     stateMutability: 'view',
