@@ -1,4 +1,4 @@
-import ConnectWalletBtn from './ConnectWalletBtn/ConnectWalletBtn';
+import Header from '@/widgets/header/ui/Header';
 import styles from './Layout.module.css';
 
 interface LayoutProps {
@@ -10,15 +10,7 @@ function Layout({ children }: LayoutProps) {
 
   return (
     <>
-      <header className={styles.header}>
-        <div>
-          <h4 style={{ margin: 0 }}></h4>
-        </div>
-
-        <div>
-          <ConnectWalletBtn />
-        </div>
-      </header>
+      <Header />
 
       <main className={styles.main}>{children}</main>
 

@@ -1,0 +1,20 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1200px;
+  width: 100%;
+}
+
+.grid {
+  width: 100%;
+  min-height: 200px;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  place-items: stretch;
+  gap: 24px;
+}
+
+.participants {
+  grid-row: span 2;
+}

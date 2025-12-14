@@ -1,6 +1,6 @@
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  line-height: 1;
   font-weight: 400;
 
   color-scheme: light dark;
@@ -11,6 +11,14 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 a {
@@ -25,6 +33,26 @@ a:hover {
 body {
   margin: 0;
   min-width: 320px;
+}
+
+body.dark {
+  color: #fff;
+  background: #2d064f;
+  background-image: linear-gradient(
+    to left top,
+    #3c0288,
+    #460396,
+    #5103a4,
+    #5c03b2,
+    #6703c0,
+    #6305bc,
+    #5e07b7,
+    #5a09b3,
+    #450a9b,
+    #320983,
+    #20076c,
+    #0f0455
+  );
 }
 
 h1 {

@@ -24,13 +24,13 @@ function CurrentRound() {
   }, [feePrice]);
 
   return (
-    <>
+    <div>
       <div>
         <p>Minimum entry price: {formattedFeePrice} ETH</p>
       </div>
 
       <RaffleEnter defaultBidAmount={formattedFeePrice} />
-    </>
+    </div>
   );
 }
 

@@ -1,4 +1,11 @@
-import { injected, useConnect, useConnection, useConnectors, useDisconnect } from 'wagmi';
+import { Button, ConnectWalletButton } from '@/shared/ui-kit/Button';
+import {
+  injected,
+  useConnect,
+  useConnection,
+  useConnectors,
+  useDisconnect,
+} from 'wagmi';
 
 interface IProps {
   text?: string;
@@ -39,13 +46,15 @@ function ConnectWalletBtn({
       <div>
         <div>{chainLabel}</div>
         <div>{addressPretty}</div>
-        <button onClick={onDisconnect}>{textConnected}</button>
+        <Button onClick={onDisconnect}>{textConnected}</Button>
       </div>
     );
   }
 
   if (injectedConnector) {
-    return <button onClick={onConnect}>{text}</button>;
+    return (
+      <ConnectWalletButton onClick={onConnect}>{text}</ConnectWalletButton>
+    );
   }
 
   return null;

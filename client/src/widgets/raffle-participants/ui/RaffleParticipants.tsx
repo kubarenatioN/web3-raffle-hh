@@ -6,6 +6,7 @@ import { usePublicClient } from 'wagmi';
 
 function RaffleParticipants() {
   const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const publicClient = usePublicClient();
 
@@ -43,24 +44,39 @@ function RaffleParticipants() {
       // console.log('data:', data);
 
       setData(data);
+      setLoading(false);
     };
 
     fetchLogs();
   }, [publicClient]);
 
-  return (
-    <>
-      <h3>Participants</h3>
+  if (loading) {
+    return (
       <div>
-        {data.map((el, i) => {
-          return (
-            <div key={i}>
-              {el.data.sender} - {formatEther(el.data.amount)} ETH
-            </div>
-          );
-        })}
+        <h3>Participants</h3>
+        <div>Loading...</div>
       </div>
-    </>
+    );
+  }
+
+  return (
+    <div style={{ overflowWrap: 'anywhere' }}>
+      <h3>Participants</h3>
+
+      {loading ? (
+        <div>Loading...</div>
+      ) : (
+        <div>
+          {data.map((el, i) => {
+            return (
+              <div key={i}>
+                {el.data.sender} - {formatEther(el.data.amount)} ETH
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 

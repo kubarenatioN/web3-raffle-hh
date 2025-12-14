@@ -1,7 +1,11 @@
 import { raffleContract } from '@/shared/config/contracts';
+import { flex } from '@/shared/ui-kit/utils';
+import { styled } from '@/stitches.config';
 import { useMemo } from 'react';
 import { formatEther } from 'viem';
 import { useReadContract } from 'wagmi';
+
+const Box = styled('div', {});
 
 function Dashboard() {
   const { data: totalFundsDrawn } = useReadContract({
@@ -37,7 +41,7 @@ function Dashboard() {
   }, [totalFundsDrawn, uniquePlayersCount, totalDrawsCount, recentDrawAt]);
 
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
+    <Box css={{ gap: '1rem' }} className={flex()}>
       <div>
         <h3>Total Prize Pool</h3>
         <p>{viewData.totalFundsDrawn} ETH</p>
@@ -54,7 +58,7 @@ function Dashboard() {
         <h3>Next Draw In</h3>
         <p>{'2h 30m'}</p>
       </div>
-    </div>
+    </Box>
   );
 }
 
