@@ -37,6 +37,8 @@ function Raffle() {
     });
   }, [writeContract]);
 
+  console.log('raffle called');
+
   return (
     <div className={`Raffle ${styles.wrapper}`}>
       <Dashboard />

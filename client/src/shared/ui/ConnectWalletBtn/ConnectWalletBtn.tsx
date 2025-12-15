@@ -1,4 +1,5 @@
 import { Button, ConnectWalletButton } from '@/shared/ui-kit/Button';
+import { formatAddress } from '@/shared/utils/address';
 import {
   injected,
   useConnect,
@@ -24,12 +25,10 @@ function ConnectWalletBtn({
 
   const injectedConnector = connectors.find((c) => c.type === injected.type);
 
-  console.log(':ConnectWalletBtn called');
+  // console.log(':ConnectWalletBtn called');
 
   const chainLabel = chain?.name ? `${chain?.name} (${chain?.id})` : null;
-  const addressPretty = address
-    ? `${address.substring(0, 6)}...${address.substring(address.length - 5)}`
-    : null;
+  const addressPretty = address ? formatAddress(address) : null;
 
   const onConnect = () => {
     if (injectedConnector) {

@@ -1,10 +1,14 @@
 import { raffleAbi } from '@/abi/Raffle.abi';
 import { raffleContract } from '@/shared/config/contracts';
+import { Box } from '@/shared/ui-kit/Box';
+import { IconBox } from '@/shared/ui-kit/IconBox';
+import { Trophy } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { decodeEventLog } from 'viem';
 import { usePublicClient } from 'wagmi';
 import { type IRaffleRoundRecord } from './RaffleRoundRecord';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function RaffleHistory({ items }: { items: IRaffleRoundRecord[] }) {
   const [data, setData] = useState<any[]>([]);
   const publicClient = usePublicClient();
@@ -56,7 +60,12 @@ function RaffleHistory({ items }: { items: IRaffleRoundRecord[] }) {
 
   return (
     <div>
-      <h3>Draws History</h3>
+      <Box css={{ gap: '6px', alignItems: 'center' }}>
+        <IconBox bgColor='linear-gradient(120deg, #00d2ff 0%, #3a47d5 100%)'>
+          <Trophy />
+        </IconBox>
+        <h4>Draws History</h4>
+      </Box>
 
       <div>
         {data.map((item, i) => (

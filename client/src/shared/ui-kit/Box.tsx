@@ -3,7 +3,20 @@ import { styled } from '@/stitches.config';
 export const Box = styled('div', {
   display: 'flex',
 
-  variants: {},
+  variants: {
+    dir: {
+      row: {
+        flexDirection: 'row',
+      },
+      column: {
+        flexDirection: 'column',
+      },
+    },
+  },
+
+  defaultVariants: {
+    dir: 'row',
+  },
 });
 
 export const Section = styled('div', {

@@ -1,80 +1,76 @@
-import { raffleAbi } from '@/abi/Raffle.abi';
-import { raffleContract } from '@/shared/config/contracts';
-import { useEffect, useState } from 'react';
-import { decodeEventLog, formatEther } from 'viem/utils';
-import { usePublicClient } from 'wagmi';
+import { gqlPath } from '@/shared/config/gql-path';
+import { Box } from '@/shared/ui-kit/Box';
+import { IconBox } from '@/shared/ui-kit/IconBox';
+import { Text } from '@/shared/ui-kit/Typography';
+import { formatAddress } from '@/shared/utils/address';
+import { useQuery } from '@tanstack/react-query';
+import request, { gql } from 'graphql-request';
+import { Users } from 'lucide-react';
+import { useMemo } from 'react';
+import { formatEther } from 'viem/utils';
+
+const GET_PARTICIPANTS = gql`
+  query GetParticipants {
+    raffleEntereds {
+      amount
+      blockNumber
+      blockTimestamp
+      id
+      sender
+      transactionHash
+    }
+  }
+`;
+
+interface IRaffleEntered {
+  sender: string;
+  amount: bigint;
+}
 
 function RaffleParticipants() {
-  const [data, setData] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const { data: participants, isPending } = useQuery({
+    queryKey: ['participants'],
+    queryFn: () => request(gqlPath(), GET_PARTICIPANTS),
+  });
 
-  const publicClient = usePublicClient();
+  const data = useMemo(() => {
+    if (!participants) return [];
 
-  useEffect(() => {
-    const fetchLogs = async () => {
-      const _fromBlock = 9720212n;
-      const eventAbi = raffleAbi.find(
-        (item) => item.type === 'event' && item.name === 'RaffleEntered',
-      );
-      const logs = await publicClient.getLogs({
-        address: raffleContract.address,
-        event: eventAbi,
-        fromBlock: _fromBlock,
-        toBlock: _fromBlock + 1000n,
-      });
+    const _pItems = participants.raffleEntereds as IRaffleEntered[];
+    const result = _pItems.map((el) => {
+      return {
+        sender: el.sender,
+        amount: formatEther(el.amount),
+      };
+    });
 
-      const data = logs.map((event) => {
-        const decoded = decodeEventLog({
-          abi: [eventAbi],
-          data: event.data,
-          topics: event.topics,
-        });
+    return result;
+  }, [participants]);
 
-        return {
-          eventName: decoded.eventName,
-          data: decoded.args,
-          timestamp: Date.now() / 1000,
-          txHash: event.transactionHash,
-        };
-      });
-
-      console.log(logs);
-
-      // console.log('logs:', logs);
-      // console.log('data:', data);
-
-      setData(data);
-      setLoading(false);
-    };
-
-    fetchLogs();
-  }, [publicClient]);
-
-  if (loading) {
-    return (
-      <div>
-        <h3>Participants</h3>
-        <div>Loading...</div>
-      </div>
-    );
-  }
+  console.log('participants', data);
 
   return (
     <div style={{ overflowWrap: 'anywhere' }}>
-      <h3>Participants</h3>
+      <Box css={{ gap: '6px', alignItems: 'center' }}>
+        <IconBox bgColor='linear-gradient(120deg, #00d2ff 0%, #3a47d5 100%)'>
+          <Users />
+        </IconBox>
+        <h4>Current Participants</h4>
+      </Box>
 
-      {loading ? (
+      {isPending ? (
         <div>Loading...</div>
       ) : (
-        <div>
+        <Box dir='column' css={{ gap: '0.8rem', padding: '0.8rem 0' }}>
           {data.map((el, i) => {
             return (
-              <div key={i}>
-                {el.data.sender} - {formatEther(el.data.amount)} ETH
-              </div>
+              <Box key={i} dir='column'>
+                <Text size='sm'>Address: {formatAddress(el.sender)}</Text>
+                <Text size='sm'>Amount: {el.amount} ETH</Text>
+              </Box>
             );
           })}
-        </div>
+        </Box>
       )}
     </div>
   );
