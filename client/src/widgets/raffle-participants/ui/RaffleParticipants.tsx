@@ -11,12 +11,12 @@ import { formatEther } from 'viem/utils';
 
 const GET_PARTICIPANTS = gql`
   query GetParticipants {
-    raffleEntereds {
+    raffleEntereds(first: 10) {
+      id
       amount
+      sender
       blockNumber
       blockTimestamp
-      id
-      sender
       transactionHash
     }
   }
@@ -46,8 +46,6 @@ function RaffleParticipants() {
 
     return result;
   }, [participants]);
-
-  console.log('participants', data);
 
   return (
     <div style={{ overflowWrap: 'anywhere' }}>

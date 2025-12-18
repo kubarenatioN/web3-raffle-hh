@@ -57,14 +57,15 @@ function Raffle() {
         </Section>
       </div>
 
-      <hr />
-
       {address === raffleOwner && (
-        <div>
-          <button disabled={pendingWrite} onClick={() => pickWinner()}>
-            Pick winner
-          </button>
-        </div>
+        <>
+          <hr />
+          <div>
+            <button disabled={pendingWrite} onClick={() => pickWinner()}>
+              Pick winner
+            </button>
+          </div>
+        </>
       )}
     </div>
   );
