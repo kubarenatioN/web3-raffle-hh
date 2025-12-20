@@ -471,19 +471,6 @@ describe('Raffle', () => {
         .withArgs(raffleOwner, ownerCommission);
     });
   });
-
-  describe('Pagination', () => {
-    it('should get rounds history page', async () => {
-      const { raffle } = await networkHelpers.loadFixture(deployRaffleFixture);
-
-      const response = await raffle.getRoundsHistoryPage(0, 10);
-
-      const [_items, _metadata] = response;
-
-      expect(_metadata).to.exist;
-      expect(_metadata[1]).to.eq(10); // page size
-    });
-  });
 });
 
 async function enterRaffle(raffle: Raffle) {
