@@ -69,16 +69,6 @@ export const raffleAbi = [
   },
   {
     inputs: [],
-    name: 'PaginationLib__InvalidPageSize',
-    type: 'error',
-  },
-  {
-    inputs: [],
-    name: 'PaginationLib__PageNumberOutOfRange',
-    type: 'error',
-  },
-  {
-    inputs: [],
     name: 'Raffle__ErrorWhileWithdraw',
     type: 'error',
   },
@@ -140,17 +130,6 @@ export const raffleAbi = [
       },
     ],
     name: 'Raffle__OnlyOwner',
-    type: 'error',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'uint256',
-        name: 'pageSize',
-        type: 'uint256',
-      },
-    ],
-    name: 'Raffle__TooLargePageSize',
     type: 'error',
   },
   {
@@ -261,6 +240,12 @@ export const raffleAbi = [
         name: 'amount',
         type: 'uint256',
       },
+      {
+        indexed: true,
+        internalType: 'uint256',
+        name: 'round',
+        type: 'uint256',
+      },
     ],
     name: 'RaffleEntered',
     type: 'event',
@@ -326,7 +311,7 @@ export const raffleAbi = [
     anonymous: false,
     inputs: [
       {
-        indexed: false,
+        indexed: true,
         internalType: 'address',
         name: 'receiver',
         type: 'address',
@@ -345,13 +330,13 @@ export const raffleAbi = [
     anonymous: false,
     inputs: [
       {
-        indexed: false,
+        indexed: true,
         internalType: 'address',
         name: 'winner',
         type: 'address',
       },
       {
-        indexed: false,
+        indexed: true,
         internalType: 'uint256',
         name: 'round',
         type: 'uint256',
@@ -426,78 +411,13 @@ export const raffleAbi = [
     type: 'function',
   },
   {
-    inputs: [
-      {
-        internalType: 'uint256',
-        name: 'page',
-        type: 'uint256',
-      },
-      {
-        internalType: 'uint256',
-        name: 'pageSize',
-        type: 'uint256',
-      },
-    ],
-    name: 'getRoundsHistoryPage',
+    inputs: [],
+    name: 'getPriceFeedAnswer',
     outputs: [
       {
-        components: [
-          {
-            internalType: 'uint256',
-            name: 'round',
-            type: 'uint256',
-          },
-          {
-            internalType: 'address',
-            name: 'winner',
-            type: 'address',
-          },
-          {
-            internalType: 'uint256',
-            name: 'amount',
-            type: 'uint256',
-          },
-        ],
-        internalType: 'struct Raffle.RoundResult[]',
-        name: 'items',
-        type: 'tuple[]',
-      },
-      {
-        components: [
-          {
-            internalType: 'uint256',
-            name: 'currentPage',
-            type: 'uint256',
-          },
-          {
-            internalType: 'uint256',
-            name: 'pageSize',
-            type: 'uint256',
-          },
-          {
-            internalType: 'uint256',
-            name: 'totalItems',
-            type: 'uint256',
-          },
-          {
-            internalType: 'uint256',
-            name: 'totalPages',
-            type: 'uint256',
-          },
-          {
-            internalType: 'bool',
-            name: 'hasNextPage',
-            type: 'bool',
-          },
-          {
-            internalType: 'bool',
-            name: 'hasPreviousPage',
-            type: 'bool',
-          },
-        ],
-        internalType: 'struct PaginationLib.PageMetadata',
-        name: 'metadata',
-        type: 'tuple',
+        internalType: 'int256',
+        name: '',
+        type: 'int256',
       },
     ],
     stateMutability: 'view',
@@ -537,67 +457,6 @@ export const raffleAbi = [
         internalType: 'uint256',
         name: '',
         type: 'uint256',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'uint256',
-        name: 'page',
-        type: 'uint256',
-      },
-      {
-        internalType: 'uint256',
-        name: 'pageSize',
-        type: 'uint256',
-      },
-    ],
-    name: 'getUniquePlayersPage',
-    outputs: [
-      {
-        internalType: 'address[]',
-        name: 'players',
-        type: 'address[]',
-      },
-      {
-        components: [
-          {
-            internalType: 'uint256',
-            name: 'currentPage',
-            type: 'uint256',
-          },
-          {
-            internalType: 'uint256',
-            name: 'pageSize',
-            type: 'uint256',
-          },
-          {
-            internalType: 'uint256',
-            name: 'totalItems',
-            type: 'uint256',
-          },
-          {
-            internalType: 'uint256',
-            name: 'totalPages',
-            type: 'uint256',
-          },
-          {
-            internalType: 'bool',
-            name: 'hasNextPage',
-            type: 'bool',
-          },
-          {
-            internalType: 'bool',
-            name: 'hasPreviousPage',
-            type: 'bool',
-          },
-        ],
-        internalType: 'struct Raffle.PageMetadata',
-        name: 'metadata',
-        type: 'tuple',
       },
     ],
     stateMutability: 'view',
@@ -751,35 +610,6 @@ export const raffleAbi = [
       {
         internalType: 'uint256',
         name: '',
-        type: 'uint256',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'uint256',
-        name: '',
-        type: 'uint256',
-      },
-    ],
-    name: 's_roundsHistory',
-    outputs: [
-      {
-        internalType: 'uint256',
-        name: 'round',
-        type: 'uint256',
-      },
-      {
-        internalType: 'address',
-        name: 'winner',
-        type: 'address',
-      },
-      {
-        internalType: 'uint256',
-        name: 'amount',
         type: 'uint256',
       },
     ],
