@@ -8,9 +8,9 @@ dataSources:
     name: Raffle
     network: sepolia
     source:
-      address: "0xEe2B01764645f876efeE4cD3F34534dDCf58bDDE"
+      address: '0xE429b5e972D1924eEa4Af628F6c9477F7b0A6F2f'
       abi: Raffle
-      startBlock: 9823218
+      startBlock: 9881262
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
@@ -35,7 +35,7 @@ dataSources:
           handler: handleOwnershipTransferRequested
         - event: OwnershipTransferred(indexed address,indexed address)
           handler: handleOwnershipTransferred
-        - event: RaffleEntered(indexed address,uint256)
+        - event: RaffleEntered(indexed address,uint256,indexed uint256)
           handler: handleRaffleEntered
         - event: RaffleEntranceFeeUpdated(uint256,uint256)
           handler: handleRaffleEntranceFeeUpdated
@@ -43,8 +43,8 @@ dataSources:
           handler: handleRaffleOwnerFundsSent
         - event: RaffleRandomWordsRequested(indexed uint256,uint256)
           handler: handleRaffleRandomWordsRequested
-        - event: RaffleWinnerFundsSent(address,uint256)
+        - event: RaffleWinnerFundsSent(indexed address,uint256)
           handler: handleRaffleWinnerFundsSent
-        - event: RaffleWinnerPicked(address,uint256,uint256,uint256)
+        - event: RaffleWinnerPicked(indexed address,indexed uint256,uint256,uint256)
           handler: handleRaffleWinnerPicked
       file: ./src/raffle.ts
