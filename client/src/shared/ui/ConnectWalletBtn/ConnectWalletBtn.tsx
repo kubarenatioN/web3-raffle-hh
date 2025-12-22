@@ -1,13 +1,8 @@
 import { Box, Text } from '@/shared/ui-kit';
 import { Button, ConnectWalletButton } from '@/shared/ui-kit/Button';
 import { formatAddress } from '@/shared/utils/address';
-import {
-  injected,
-  useConnect,
-  useConnection,
-  useConnectors,
-  useDisconnect,
-} from 'wagmi';
+import { useConnect, useConnection, useConnectors, useDisconnect } from 'wagmi';
+import { injected, metaMask } from 'wagmi/connectors';
 
 interface IProps {
   text?: string;
@@ -24,9 +19,11 @@ function ConnectWalletBtn({
   const { disconnect } = useDisconnect();
   const connectors = useConnectors();
 
-  const injectedConnector = connectors.find((c) => c.type === injected.type);
+  let injectedConnector = connectors.find((c) => c.type === metaMask.type);
 
-  // console.log(':ConnectWalletBtn called');
+  if (!injectedConnector) {
+    injectedConnector = connectors.find((c) => c.type === injected.type);
+  }
 
   const chainLabel = `${chain?.name}`;
   const addressPretty = formatAddress(address);
