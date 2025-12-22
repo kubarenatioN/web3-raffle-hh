@@ -5,13 +5,18 @@ import { Text } from '@/shared/ui-kit/Typography';
 import { formatAddress } from '@/shared/utils/address';
 import { useQuery } from '@tanstack/react-query';
 import request, { gql } from 'graphql-request';
-import { Users } from 'lucide-react';
+import { Users, Wallet } from 'lucide-react';
 import { useMemo } from 'react';
 import { formatEther } from 'viem/utils';
 
 const GET_PARTICIPANTS = gql`
   query GetParticipants {
-    raffleEntereds(first: 10) {
+    raffleEntereds(
+      where: { round: 1 }
+      first: 50
+      orderBy: blockNumber
+      orderDirection: desc
+    ) {
       id
       amount
       sender
@@ -50,7 +55,7 @@ function RaffleParticipants() {
   return (
     <div style={{ overflowWrap: 'anywhere' }}>
       <Box css={{ gap: '6px', alignItems: 'center' }}>
-        <IconBox bgColor='linear-gradient(120deg, #00d2ff 0%, #3a47d5 100%)'>
+        <IconBox colorType='sky'>
           <Users />
         </IconBox>
         <h4>Current Participants</h4>
@@ -59,12 +64,45 @@ function RaffleParticipants() {
       {isPending ? (
         <div>Loading...</div>
       ) : (
-        <Box dir='column' css={{ gap: '0.8rem', padding: '0.8rem 0' }}>
+        <Box
+          dir='column'
+          css={{
+            gap: '0.8rem',
+            padding: '0.8rem 0',
+          }}
+        >
           {data.map((el, i) => {
             return (
-              <Box key={i} dir='column'>
-                <Text size='sm'>Address: {formatAddress(el.sender)}</Text>
-                <Text size='sm'>Amount: {el.amount} ETH</Text>
+              <Box
+                key={i}
+                dir='column'
+                css={{
+                  gap: '8px',
+                  backgroundColor:
+                    'color-mix(in oklab, #1a1a1a 20%, transparent)',
+                  boxShadow: '0 0 0 1px rgba(193, 127, 255, 0.5)',
+                  padding: '0.6rem',
+                  borderRadius: '8px',
+                }}
+              >
+                <Box css={{ alignItems: 'center', gap: '6px' }}>
+                  <Wallet size={12} color='#c27aff' />
+                  <Text
+                    css={{
+                      fontFamily: 'monospace',
+                      fontSize: '0.9rem',
+                      letterSpacing: '0.05em',
+                    }}
+                  >
+                    {formatAddress(el.sender)}
+                  </Text>
+                </Box>
+                <Box css={{ justifyContent: 'space-between' }}>
+                  <Text size='sm' css={{ color: '#dab2ff' }}>
+                    Bid amount
+                  </Text>
+                  <Text size='sm'>{el.amount} ETH</Text>
+                </Box>
               </Box>
             );
           })}

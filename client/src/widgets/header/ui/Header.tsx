@@ -10,11 +10,7 @@ function Header() {
     <header className={styles.header}>
       <div className={styles.container}>
         <Box css={{ gap: 8, alignItems: 'center' }}>
-          <IconBox
-            bgColor={
-              'linear-gradient(142deg, rgb(248 45 255) 0%, rgb(35 46 223) 100%)'
-            }
-          >
+          <IconBox colorType='pink'>
             <Trophy />
           </IconBox>
           <div>

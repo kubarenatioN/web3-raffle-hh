@@ -25,6 +25,4 @@ export const Section = styled('div', {
   borderColor: '#d1d1d157',
   borderRadius: 8,
   backgroundColor: 'rgb(61 0 97 / 27%)',
-
-  minHeight: 200, // temp
 });

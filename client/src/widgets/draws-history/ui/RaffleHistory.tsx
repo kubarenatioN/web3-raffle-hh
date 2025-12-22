@@ -64,7 +64,7 @@ function RaffleHistory({ items }: { items: IRaffleRoundRecord[] }) {
   return (
     <div>
       <Box css={{ gap: '6px', alignItems: 'center' }}>
-        <IconBox bgColor='linear-gradient(140deg,rgb(122, 250, 58) 0%,rgb(2, 136, 45) 100%)'>
+        <IconBox colorType='lime'>
           <Trophy />
         </IconBox>
         <h4>Draws History</h4>

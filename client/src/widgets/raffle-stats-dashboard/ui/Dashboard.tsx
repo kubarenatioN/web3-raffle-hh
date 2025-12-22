@@ -1,24 +1,28 @@
 import { raffleContract } from '@/shared/config/contracts';
-import { flex } from '@/shared/ui-kit/utils';
-import { styled } from '@/stitches.config';
+import {
+  Box,
+  IconBox,
+  Section,
+  Text,
+  type IconBoxColorType,
+} from '@/shared/ui-kit';
+import { Clock, Coins, Trophy, Users } from 'lucide-react';
 import { useMemo } from 'react';
 import { formatEther } from 'viem';
 import { useReadContract } from 'wagmi';
 
-const Box = styled('div', {});
-
 function Dashboard() {
-  const { data: totalFundsDrawn } = useReadContract({
+  const { data: totalFundsDrawn = 0n } = useReadContract({
     ...raffleContract,
     functionName: 'getTotalFundsDrawn',
   });
 
-  const { data: uniquePlayersCount } = useReadContract({
+  const { data: uniquePlayersCount = 0n } = useReadContract({
     ...raffleContract,
     functionName: 'getUniquePlayersCount',
   });
 
-  const { data: totalDrawsCount } = useReadContract({
+  const { data: totalDrawsCount = 0n } = useReadContract({
     ...raffleContract,
     functionName: 'getTotalDrawsCount',
   });
@@ -30,34 +34,67 @@ function Dashboard() {
 
   // Memoize formatted values for performance
   const viewData = useMemo(() => {
-    return {
-      totalFundsDrawn: totalFundsDrawn ? formatEther(totalFundsDrawn) : '0',
-      uniquePlayersCount: uniquePlayersCount?.toString() ?? '0',
-      totalDrawsCount: totalDrawsCount?.toString() ?? '0',
+    const data = {
+      totalFundsDrawn: formatEther(totalFundsDrawn),
+      uniquePlayersCount: uniquePlayersCount.toString(),
+      totalDrawsCount: totalDrawsCount.toString(),
       recentDrawAt: recentDrawAt
         ? new Date(Number(recentDrawAt) * 1000).toLocaleString()
         : 'N/A',
     };
+
+    return [
+      {
+        title: 'Total Prize Pool',
+        value: data.totalFundsDrawn,
+        icon: <Coins />,
+        color: 'orange',
+      },
+      {
+        title: 'Current Participants',
+        value: data.uniquePlayersCount,
+        icon: <Users />,
+        color: 'sky',
+      },
+      {
+        title: 'Total Draws',
+        value: data.totalDrawsCount,
+        icon: <Trophy />,
+        color: 'pink',
+      },
+      {
+        title: 'Next Draw In',
+        value: '2h 30m',
+        icon: <Clock />,
+        color: 'lime',
+      },
+    ];
   }, [totalFundsDrawn, uniquePlayersCount, totalDrawsCount, recentDrawAt]);
 
   return (
-    <Box css={{ gap: '1rem' }} className={flex()}>
-      <div>
-        <h3>Total Prize Pool</h3>
-        <p>{viewData.totalFundsDrawn} ETH</p>
-      </div>
-      <div>
-        <h3>Current Participants</h3>
-        <p>{viewData.uniquePlayersCount}</p>
-      </div>
-      <div>
-        <h3>Total Draws</h3>
-        <p>{viewData.totalDrawsCount}</p>
-      </div>
-      <div>
-        <h3>Next Draw In</h3>
-        <p>{'2h 30m'}</p>
-      </div>
+    <Box css={{ gap: '1rem' }}>
+      {viewData.map((card) => {
+        return (
+          <Section
+            key={card.title}
+            css={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              flex: '1 1 25%',
+              gap: 12,
+            }}
+          >
+            <IconBox colorType={card.color as IconBoxColorType}>
+              {card.icon}
+            </IconBox>
+            <Text size='lg' weight='bold'>
+              {card.value}
+            </Text>
+            <Text size='sm'>{card.title}</Text>
+          </Section>
+        );
+      })}
     </Box>
   );
 }

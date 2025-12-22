@@ -16,7 +16,7 @@ export const Button = styled('button', {
   variants: {
     variant: {
       primary: {
-        backgroundColor: 'gray',
+        backgroundColor: 'rgb(138 138 138)',
         color: 'white',
       },
       accent: {

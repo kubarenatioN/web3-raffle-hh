@@ -1,3 +1,4 @@
+import { Box, Text } from '@/shared/ui-kit';
 import { Button, ConnectWalletButton } from '@/shared/ui-kit/Button';
 import { formatAddress } from '@/shared/utils/address';
 import {
@@ -18,7 +19,7 @@ function ConnectWalletBtn({
   text = 'Connect Wallet',
   textConnected = 'Disconnect Wallet',
 }: IProps) {
-  const { isConnected, chain, address } = useConnection();
+  const { isConnected, chain, address = '0x..' } = useConnection();
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
   const connectors = useConnectors();
@@ -27,8 +28,8 @@ function ConnectWalletBtn({
 
   // console.log(':ConnectWalletBtn called');
 
-  const chainLabel = chain?.name ? `${chain?.name} (${chain?.id})` : null;
-  const addressPretty = address ? formatAddress(address) : null;
+  const chainLabel = `${chain?.name}`;
+  const addressPretty = formatAddress(address);
 
   const onConnect = () => {
     if (injectedConnector) {
@@ -42,11 +43,13 @@ function ConnectWalletBtn({
 
   if (isConnected) {
     return (
-      <div>
-        <div>{chainLabel}</div>
-        <div>{addressPretty}</div>
+      <Box css={{ gap: '8px' }}>
         <Button onClick={onDisconnect}>{textConnected}</Button>
-      </div>
+        <Box dir='column' css={{ gap: '2px' }}>
+          <Text>{addressPretty}</Text>
+          <Text size='sm'>{chainLabel}</Text>
+        </Box>
+      </Box>
     );
   }
 

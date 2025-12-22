@@ -1,5 +1,5 @@
 import { raffleContract } from '@/shared/config/contracts';
-import { Section } from '@/shared/ui-kit/Box';
+import { Box, Section, Text } from '@/shared/ui-kit';
 import RaffleHistory from '@/widgets/draws-history/ui/RaffleHistory';
 import CurrentRound from '@/widgets/raffle-current-round/ui/CurrentRound';
 import RaffleParticipants from '@/widgets/raffle-participants/ui/RaffleParticipants';
@@ -41,6 +41,16 @@ function Raffle() {
 
   return (
     <div className={`Raffle ${styles.wrapper}`}>
+      <Box dir='column' css={{ gap: 12 }}>
+        <Text as='h1' size='xl' weight='bold'>
+          Decentralized Raffle
+        </Text>
+        <Text>
+          Enter the raffle, place your bid, and win ETH! Winner selected fairly
+          using Chainlink VRF.
+        </Text>
+      </Box>
+
       <Dashboard />
 
       <div className={styles.grid}>

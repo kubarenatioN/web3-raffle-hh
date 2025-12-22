@@ -3,18 +3,18 @@ import { IconBox } from '@/shared/ui-kit/IconBox';
 import { Text } from '@/shared/ui-kit/Typography';
 import { Ticket } from 'lucide-react';
 import { useMemo } from 'react';
-import { formatEther } from 'viem/utils';
+import { formatEther, formatUnits } from 'viem/utils';
 import { useReadContract, useReadContracts } from 'wagmi';
 import { raffleContract } from '../../../shared/config/contracts';
 import RaffleEnter from '../../raffle-enter/ui/RaffleEnter';
 
 function CurrentRound() {
-  const { data: feePriceEthResponse } = useReadContract({
+  const { data: feePriceEthResponse = 0n } = useReadContract({
     ...raffleContract,
     functionName: 'getFeePriceEth',
   });
 
-  const { data: [totalRoundBalanceResponse, entranceFeeResponse] = [] } =
+  const { data: [totalRoundBalanceResponse, dataFeedAnswerResponse] = [] } =
     useReadContracts({
       contracts: [
         {
@@ -23,17 +23,17 @@ function CurrentRound() {
         },
         {
           ...raffleContract,
-          functionName: 's_entranceFee',
+          functionName: 'getPriceFeedAnswer',
         },
       ],
     });
 
-  const { result: totalRoundBalance } = totalRoundBalanceResponse ?? {};
-  const { result: entranceFee } = entranceFeeResponse ?? {};
+  const { result: totalRoundBalance = 0n } = totalRoundBalanceResponse ?? {};
+  const { result: dataFeedAnswer = 0n } = dataFeedAnswerResponse ?? {};
 
   const feePriceStr = useMemo(() => {
     const res = feePriceEthResponse;
-    const feePrice = res ? formatEther(res) : '0';
+    const feePrice = formatEther(res);
 
     return feePrice;
   }, [feePriceEthResponse]);
@@ -50,20 +50,20 @@ function CurrentRound() {
   }, [totalRoundBalance]);
 
   const roundPrizePoolUsd = useMemo(() => {
-    const usdPerEth =
-      feePriceEthResponse && entranceFee
-        ? (entranceFee * 10n ** 18n) / feePriceEthResponse
-        : undefined;
+    const dataFeedDecimals = 10n ** 8n;
 
-    const totalRoundBalanceWei = (usdPerEth ?? 0n) * (totalRoundBalance ?? 0n);
+    const totalRoundBalanceWei =
+      (dataFeedAnswer * totalRoundBalance) / dataFeedDecimals;
 
-    return totalRoundBalanceWei;
-  }, [totalRoundBalance, entranceFee, feePriceEthResponse]);
+    const formattedUsd = formatUnits(totalRoundBalanceWei, 18);
+
+    return Number(formattedUsd).toFixed(2);
+  }, [totalRoundBalance, dataFeedAnswer]);
 
   return (
     <Box dir='column' css={{ gap: '1.5rem' }}>
       <Box css={{ gap: '6px', alignItems: 'center' }}>
-        <IconBox bgColor='linear-gradient(120deg,rgb(138, 17, 224) 0%,rgb(156, 7, 156) 100%)'>
+        <IconBox colorType='pink'>
           <Ticket />
         </IconBox>
         <h4>Round #{1}</h4>
@@ -71,18 +71,19 @@ function CurrentRound() {
 
       <Box>
         <Box dir='column' css={{ gap: '6px', '@bp1': { direction: 'row' } }}>
-          <Text>
-            Prize pool <br /> {roundPrizePoolEth} ETH
-          </Text>
+          <div>
+            <Text weight='medium'>Prize pool</Text>
+            <br /> {roundPrizePoolEth} ETH
+          </div>
           <Text as='span' size='sm'>
-            ≈${formatEther(roundPrizePoolUsd)} USD
+            ≈${roundPrizePoolUsd} USD
           </Text>
         </Box>
       </Box>
 
       <Box dir='column' css={{ gap: '6px' }}>
         <Text>Minimum entry price: {formattedFeePrice} ETH</Text>
-        <Text size='sm'>
+        <Text size='sm' css={{ maxWidth: '420px' }}>
           Your chance of winning increases with your bid amount. Winner selected
           randomly using Chainlink VRF for provable fairness.
         </Text>
