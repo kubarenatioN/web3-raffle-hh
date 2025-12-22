@@ -1,80 +1,104 @@
-import { raffleAbi } from '@/abi/Raffle.abi';
-import { raffleContract } from '@/shared/config/contracts';
-import { useEffect, useState } from 'react';
-import { decodeEventLog } from 'viem';
-import { usePublicClient } from 'wagmi';
+import { gqlPath } from '@/shared/config/gql-path';
+import { Box } from '@/shared/ui-kit/Box';
+import { IconBox } from '@/shared/ui-kit/IconBox';
+import { Text } from '@/shared/ui-kit/Typography';
+import { formatAddress } from '@/shared/utils/address';
+import { useQuery } from '@tanstack/react-query';
+import request, { gql } from 'graphql-request';
+import { Trophy } from 'lucide-react';
+import { useMemo } from 'react';
+import { formatEther, type Address } from 'viem';
 import { type IRaffleRoundRecord } from './RaffleRoundRecord';
 
+const GET_ROUNDS_HISTORY = gql`
+  query GetWinnersHistory {
+    raffleWinnerPickeds(first: 10) {
+      id
+      round
+      winner
+      fundsDrawn
+      participantsCount
+      blockNumber
+      blockTimestamp
+      transactionHash
+    }
+  }
+`;
+
+interface IRaffleWinnerRecord {
+  round: string;
+  winner: Address;
+  fundsDrawn: bigint;
+  participantsCount: number;
+  blockNumber: number;
+  blockTimestamp: number;
+  transactionHash: string;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function RaffleHistory({ items }: { items: IRaffleRoundRecord[] }) {
-  const [data, setData] = useState<any[]>([]);
-  const publicClient = usePublicClient();
+  const { data: winnersHistoryResponse, isPending } = useQuery({
+    queryKey: ['winnersHistoryResponse'],
+    queryFn: () => request(gqlPath(), GET_ROUNDS_HISTORY),
+  });
 
-  useEffect(() => {
-    const fetchLogs = async () => {
-      const _fromBlock = 9720212n;
-      const eventAbi = raffleAbi.find(
-        (item) => item.type === 'event' && item.name === 'RaffleWinnerPicked',
-      );
-      const logs = await publicClient.getLogs({
-        address: raffleContract.address,
-        event: eventAbi,
-        fromBlock: _fromBlock,
-        toBlock: _fromBlock + 1000n,
-      });
+  const data = useMemo(() => {
+    if (!winnersHistoryResponse) return [];
 
-      const data = logs.map((event) => {
-        let decoded = null;
-        try {
-          decoded = decodeEventLog({
-            abi: [eventAbi],
-            data: event.data,
-            topics: event.topics,
-          });
-        } catch {
-          decoded = null;
-        }
-        if (!decoded) {
-          return null;
-        }
+    const _winners =
+      winnersHistoryResponse.raffleWinnerPickeds as IRaffleWinnerRecord[];
 
-        return {
-          eventName: decoded.eventName,
-          data: decoded.args,
-          timestamp: Date.now() / 1000,
-          txHash: event.transactionHash,
-        };
-      });
+    const result = _winners.map((el) => {
+      return {
+        winner: el.winner,
+        round: Number(el.round),
+        fundsDrawn: formatEther(el.fundsDrawn),
+        participantsCount: Number(el.participantsCount),
+        txHash: el.transactionHash,
+      };
+    });
 
-      // console.log('logs:', logs);
-      // console.log('data:', data);
-
-      setData(data);
-    };
-
-    fetchLogs();
-  }, [publicClient]);
+    return result;
+  }, [winnersHistoryResponse]);
 
   return (
     <div>
-      <h3>Draws History</h3>
+      <Box css={{ gap: '6px', alignItems: 'center' }}>
+        <IconBox colorType='lime'>
+          <Trophy />
+        </IconBox>
+        <h4>Draws History</h4>
+      </Box>
 
-      <div>
-        {data.map((item, i) => (
-          <div key={i}>
-            {item.eventName}: {item.data.amount} - {item.data.winner} -{' '}
-            {item.data.round} -{' '}
-            <a
-              href={`https://sepolia.etherscan.io/tx/${item.txHash}`}
-              target='_blank'
-            >
-              see tx.
-            </a>
-          </div>
-        ))}
-        {/* {items.map((item) => (
-          <RaffleRoundRecord key={item.round} data={item} />
-        ))} */}
-      </div>
+      {isPending ? (
+        <div>Loading...</div>
+      ) : (
+        <Box dir='column' css={{ gap: '1.5rem' }}>
+          {data.map((item) => (
+            <Box dir='column' css={{ gap: '2px' }} key={item.txHash}>
+              <Text>Round #{item.round + 1}</Text>
+              <Text>
+                Winner{' '}
+                <a
+                  href={`https://sepolia.etherscan.io/address/${item.winner}`}
+                  target='_blank'
+                >
+                  {formatAddress(item.winner)}
+                </a>
+              </Text>
+              <Text>Funds drawn {item.fundsDrawn} ETH</Text>
+              <Text>Participants count {item.participantsCount}</Text>
+
+              <a
+                href={`https://sepolia.etherscan.io/tx/${item.txHash}`}
+                target='_blank'
+              >
+                see tx.
+              </a>
+            </Box>
+          ))}
+        </Box>
+      )}
     </div>
   );
 }

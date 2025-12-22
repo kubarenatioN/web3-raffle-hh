@@ -7,7 +7,7 @@ const VRF_SUB_ID_SEPOLIA =
 
 export default buildModule('Raffle', (m) => {
   const entranceFee = 5; // in USD
-  const drawInterval = 60 * 3; // in seconds
+  const drawInterval = 60 * 60 * 24 * 7; // in seconds (5 days)
 
   const args = [
     entranceFee,
@@ -16,6 +16,7 @@ export default buildModule('Raffle', (m) => {
     VRF_COORDINATOR_SEPOLIA,
     VRF_SUB_ID_SEPOLIA,
   ];
+
   const raffle = m.contract('Raffle', args);
 
   return { raffle };

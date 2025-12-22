@@ -1,3 +1,4 @@
+import { Button } from '@/shared/ui-kit/Button';
 import { useCallback, useState } from 'react';
 import { parseEther } from 'viem/utils';
 import { useWriteContract } from 'wagmi';
@@ -9,14 +10,11 @@ interface IProps {
 }
 
 function RaffleEnter({ defaultBidAmount }: IProps) {
-  const [bidAmount, setBidAmount] = useState<number | null>(null);
+  const [bidAmount, setBidAmount] = useState<string | null>(null);
   const { writeContract, isPending: pendingWrite } = useWriteContract();
 
   const changeBidAmount = (value: string) => {
-    const _decimal = Number(value);
-    if (!Number.isNaN(_decimal)) {
-      setBidAmount(_decimal);
-    }
+    setBidAmount(value);
   };
 
   const enterRaffle = useCallback(
@@ -39,19 +37,23 @@ function RaffleEnter({ defaultBidAmount }: IProps) {
         <input
           id='bid-amount'
           style={{ minWidth: 200 }}
-          type='text'
+          type='number'
           value={bidAmount != null ? bidAmount : defaultBidAmount}
           onChange={(e) => changeBidAmount(e.target.value)}
         />
       </div>
 
       <div>
-        <button
+        <Button
           disabled={pendingWrite}
-          onClick={() => enterRaffle(String(bidAmount))}
+          onClick={() =>
+            enterRaffle(
+              String(bidAmount != null ? bidAmount : defaultBidAmount),
+            )
+          }
         >
           Enter raffle
-        </button>
+        </Button>
       </div>
     </div>
   );

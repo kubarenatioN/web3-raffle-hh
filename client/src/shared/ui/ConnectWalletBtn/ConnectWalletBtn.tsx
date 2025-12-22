@@ -1,4 +1,13 @@
-import { injected, useConnect, useConnection, useConnectors, useDisconnect } from 'wagmi';
+import { Box, Text } from '@/shared/ui-kit';
+import { Button, ConnectWalletButton } from '@/shared/ui-kit/Button';
+import { formatAddress } from '@/shared/utils/address';
+import {
+  injected,
+  useConnect,
+  useConnection,
+  useConnectors,
+  useDisconnect,
+} from 'wagmi';
 
 interface IProps {
   text?: string;
@@ -10,19 +19,17 @@ function ConnectWalletBtn({
   text = 'Connect Wallet',
   textConnected = 'Disconnect Wallet',
 }: IProps) {
-  const { isConnected, chain, address } = useConnection();
+  const { isConnected, chain, address = '0x..' } = useConnection();
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
   const connectors = useConnectors();
 
   const injectedConnector = connectors.find((c) => c.type === injected.type);
 
-  console.log(':ConnectWalletBtn called');
+  // console.log(':ConnectWalletBtn called');
 
-  const chainLabel = chain?.name ? `${chain?.name} (${chain?.id})` : null;
-  const addressPretty = address
-    ? `${address.substring(0, 6)}...${address.substring(address.length - 5)}`
-    : null;
+  const chainLabel = `${chain?.name}`;
+  const addressPretty = formatAddress(address);
 
   const onConnect = () => {
     if (injectedConnector) {
@@ -36,16 +43,20 @@ function ConnectWalletBtn({
 
   if (isConnected) {
     return (
-      <div>
-        <div>{chainLabel}</div>
-        <div>{addressPretty}</div>
-        <button onClick={onDisconnect}>{textConnected}</button>
-      </div>
+      <Box css={{ gap: '8px' }}>
+        <Button onClick={onDisconnect}>{textConnected}</Button>
+        <Box dir='column' css={{ gap: '2px' }}>
+          <Text>{addressPretty}</Text>
+          <Text size='sm'>{chainLabel}</Text>
+        </Box>
+      </Box>
     );
   }
 
   if (injectedConnector) {
-    return <button onClick={onConnect}>{text}</button>;
+    return (
+      <ConnectWalletButton onClick={onConnect}>{text}</ConnectWalletButton>
+    );
   }
 
   return null;

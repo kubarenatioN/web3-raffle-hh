@@ -1,11 +1,9 @@
 import Raffle from '../../../widgets/raffle/ui/Raffle';
 
 function Home() {
-  return (
-    <>
-      <Raffle />
-    </>
-  );
+  console.log('home called');
+
+  return <Raffle />;
 }
 
 export default Home;

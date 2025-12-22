@@ -4,7 +4,6 @@ pragma solidity ^0.8.28;
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
-import {PaginationLib} from "./PaginationLib.sol";
 
 error Raffle__NotEnoughFeeSent(uint256 sent, uint256 feePrice);
 error Raffle__OnlyOwner(address sender);
@@ -21,31 +20,20 @@ error Raffle__ErrorWhileWithdraw();
 error Raffle__TooLargePageSize(uint256 pageSize);
 
 contract Raffle is VRFConsumerBaseV2Plus {
-    struct RoundResult {
-        uint256 round;
-        address winner;
-        uint256 amount;
-    }
-
-    struct PageMetadata {
-        uint256 currentPage;
-        uint256 pageSize;
-        uint256 totalItems;
-        uint256 totalPages;
-        bool hasNextPage;
-        bool hasPreviousPage;
-    }
-
-    event RaffleEntered(address indexed sender, uint256 amount);
+    event RaffleEntered(
+        address indexed sender,
+        uint256 amount,
+        uint256 indexed round
+    );
     event RaffleEntranceFeeUpdated(uint256 oldFee, uint256 newFee);
     event RaffleRandomWordsRequested(uint256 indexed reqId, uint256 round);
     event RaffleWinnerPicked(
-        address winner,
-        uint256 round,
+        address indexed winner,
+        uint256 indexed round,
         uint256 fundsDrawn,
         uint256 participantsCount
     );
-    event RaffleWinnerFundsSent(address receiver, uint256 amount);
+    event RaffleWinnerFundsSent(address indexed receiver, uint256 amount);
     event RaffleOwnerFundsSent(address owner, uint256 amount);
 
     enum State {
@@ -60,7 +48,6 @@ contract Raffle is VRFConsumerBaseV2Plus {
     address[] public s_playersList;
     address[] public s_uniquePlayersList;
 
-    RoundResult[] public s_roundsHistory; // winner to win funds amount
     mapping(uint256 => address) public winners; // round number to winner address
     mapping(address => uint256) public s_winnerBalance; // balances of winners
 
@@ -139,7 +126,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
         s_playersList.push(_sender);
         s_totalBalance += _value;
 
-        emit RaffleEntered(_sender, _value);
+        emit RaffleEntered(_sender, _value, s_roundsCount);
     }
 
     function getFeePriceEth() public view returns (uint256 price) {
@@ -208,34 +195,25 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
         winners[s_roundsCount] = winner;
 
-        // clear arrays
-        delete s_playersList;
-        delete s_uniquePlayersList;
-
-        s_state = State.OPEN;
-
         uint256 round = s_roundsCount;
-        s_roundsCount += 1;
-
         uint256 winnerAmount = (s_totalBalance * 80) / 100;
         uint256 ownerCommissionAmount = s_totalBalance - winnerAmount;
         uint256 roundFundsDrawn = s_totalBalance;
         uint256 roundParticipantsCount = s_uniquePlayersList.length;
 
+        // clear arrays
+        delete s_playersList;
+        delete s_uniquePlayersList;
+
+        s_state = State.OPEN;
         s_winnerBalance[winner] += winnerAmount;
         s_ownerCommission += ownerCommissionAmount;
-        s_totalFundsDrawn += s_totalBalance;
-        s_totalBalance = 0;
-
-        RoundResult memory result = RoundResult({
-            round: round,
-            winner: winner,
-            amount: winnerAmount
-        });
-        s_roundsHistory.push(result);
+        s_totalFundsDrawn += roundFundsDrawn;
+        s_roundsCount += 1;
 
         s_recentDrawAt = block.timestamp;
         s_waitingRequestId = 0;
+        s_totalBalance = 0;
 
         emit RaffleWinnerPicked(
             winner,
@@ -297,103 +275,15 @@ contract Raffle is VRFConsumerBaseV2Plus {
     }
 
     function getTotalDrawsCount() public view returns (uint256) {
-        return s_roundsHistory.length;
+        return s_roundsCount;
     }
 
     function getDataFeedAddress() public view returns (address) {
         return address(i_dataFeed);
     }
 
-    // ============ Pagination Functions ============
-
-    function getRoundsHistoryPage(
-        uint256 page,
-        uint256 pageSize
-    )
-        public
-        view
-        returns (
-            RoundResult[] memory items,
-            PaginationLib.PageMetadata memory metadata
-        )
-    {
-        if (pageSize >= 100) {
-            revert Raffle__TooLargePageSize(pageSize);
-        }
-
-        uint256 totalItems = s_roundsHistory.length;
-        metadata = PaginationLib.calculatePageMetadata(
-            totalItems,
-            page,
-            pageSize
-        );
-
-        (uint256 startIndex, uint256 endIndex) = PaginationLib.getPageIndices(
-            page,
-            pageSize,
-            totalItems
-        );
-
-        uint256 itemsCount = endIndex - startIndex;
-        items = new RoundResult[](itemsCount);
-
-        for (uint i = 0; i < itemsCount; i++) {
-            items[i] = s_roundsHistory[startIndex + i];
-        }
-    }
-
-    /**
-     * @notice Get paginated unique players list
-     * @param page Page number (0-indexed)
-     * @param pageSize Number of items per page
-     * @return players Array of unique player addresses
-     * @return metadata Pagination metadata
-     */
-    function getUniquePlayersPage(
-        uint256 page,
-        uint256 pageSize
-    )
-        public
-        view
-        returns (address[] memory players, PageMetadata memory metadata)
-    {
-        if (pageSize >= 100) {
-            revert Raffle__TooLargePageSize(pageSize);
-        }
-
-        if (pageSize == 0) {
-            revert();
-        }
-
-        uint256 totalItems = s_uniquePlayersList.length;
-        uint256 totalPages = (totalItems + pageSize - 1) / pageSize;
-
-        if (totalPages > 0) {
-            if (page >= totalPages) {
-                revert();
-            }
-        }
-
-        metadata = PageMetadata({
-            currentPage: page,
-            pageSize: pageSize,
-            totalItems: totalItems,
-            totalPages: totalPages,
-            hasNextPage: totalPages > 0 && page < totalPages - 1,
-            hasPreviousPage: page > 0
-        });
-
-        uint256 startIndex = page * pageSize;
-        uint256 endIndex = startIndex + pageSize;
-        if (endIndex > totalItems) {
-            endIndex = totalItems;
-        }
-
-        uint256 size = endIndex - startIndex;
-        players = new address[](size);
-
-        for (uint256 i = 0; i < size; i++) {
-            players[i] = s_uniquePlayersList[startIndex + i];
-        }
+    function getPriceFeedAnswer() public view returns (int256) {
+        (, int256 answer, , , ) = i_dataFeed.latestRoundData();
+        return answer;
     }
 }
