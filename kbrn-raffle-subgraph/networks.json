@@ -1,7 +1,7 @@
 {
   "sepolia": {
     "Raffle": {
-      "address": "0xE429b5e972D1924eEa4Af628F6c9477F7b0A6F2f",
+      "address": "0x22a5c0eb1b81681f7aae283dbf00a51b43a914a9",
       "startBlock": 9881262
     }
   }

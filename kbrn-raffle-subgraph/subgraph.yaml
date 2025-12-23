@@ -8,7 +8,7 @@ dataSources:
     name: Raffle
     network: sepolia
     source:
-      address: '0xE429b5e972D1924eEa4Af628F6c9477F7b0A6F2f'
+      address: '0x22a5c0eb1b81681f7aae283dbf00a51b43a914a9'
       abi: Raffle
       startBlock: 9881262
     mapping:
@@ -29,22 +29,8 @@ dataSources:
         - name: Raffle
           file: ./abis/Raffle.json
       eventHandlers:
-        - event: CoordinatorSet(address)
-          handler: handleCoordinatorSet
-        - event: OwnershipTransferRequested(indexed address,indexed address)
-          handler: handleOwnershipTransferRequested
-        - event: OwnershipTransferred(indexed address,indexed address)
-          handler: handleOwnershipTransferred
         - event: RaffleEntered(indexed address,uint256,indexed uint256)
           handler: handleRaffleEntered
-        - event: RaffleEntranceFeeUpdated(uint256,uint256)
-          handler: handleRaffleEntranceFeeUpdated
-        - event: RaffleOwnerFundsSent(address,uint256)
-          handler: handleRaffleOwnerFundsSent
-        - event: RaffleRandomWordsRequested(indexed uint256,uint256)
-          handler: handleRaffleRandomWordsRequested
-        - event: RaffleWinnerFundsSent(indexed address,uint256)
-          handler: handleRaffleWinnerFundsSent
         - event: RaffleWinnerPicked(indexed address,indexed uint256,uint256,uint256)
           handler: handleRaffleWinnerPicked
       file: ./src/raffle.ts
