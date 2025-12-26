@@ -12,7 +12,7 @@ import { formatEther } from 'viem/utils';
 const GET_PARTICIPANTS = gql`
   query GetParticipants {
     raffleEntereds(
-      where: { round: 1 }
+      # where: { round: 0 }
       first: 50
       orderBy: blockNumber
       orderDirection: desc
