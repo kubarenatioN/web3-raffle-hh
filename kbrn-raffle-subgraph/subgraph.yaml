@@ -10,20 +10,13 @@ dataSources:
     source:
       address: '0x22a5c0eb1b81681f7aae283dbf00a51b43a914a9'
       abi: Raffle
-      startBlock: 9881262
+      startBlock: 9900056
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
-        - CoordinatorSet
-        - OwnershipTransferRequested
-        - OwnershipTransferred
         - RaffleEntered
-        - RaffleEntranceFeeUpdated
-        - RaffleOwnerFundsSent
-        - RaffleRandomWordsRequested
-        - RaffleWinnerFundsSent
         - RaffleWinnerPicked
       abis:
         - name: Raffle

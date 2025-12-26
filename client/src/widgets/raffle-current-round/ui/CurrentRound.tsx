@@ -45,7 +45,7 @@ function CurrentRound() {
   }, [feePriceStr]);
 
   const roundPrizePoolEth = useMemo(() => {
-    const balanceStr = totalRoundBalance ? formatEther(totalRoundBalance) : '';
+    const balanceStr = totalRoundBalance ? formatEther(totalRoundBalance) : '0';
     return balanceStr;
   }, [totalRoundBalance]);
 

@@ -2,8 +2,10 @@
 pragma solidity ^0.8.28;
 
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
-import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFConsumerBaseV2Upgradeable} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Upgradeable.sol";
+import {IVRFCoordinatorV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 error Raffle__NotEnoughFeeSent(uint256 sent, uint256 feePrice);
 error Raffle__OnlyOwner(address sender);
@@ -16,16 +18,23 @@ error Raffle__WaitingForCalculation();
 
 error Raffle__TooMuchWithdrawAmount(uint256 amount, address sender);
 error Raffle__ErrorWhileWithdraw();
+error Raffle__ZeroAddress();
 
-error Raffle__TooLargePageSize(uint256 pageSize);
-
-contract Raffle is VRFConsumerBaseV2Plus {
+/**
+ * @title ChainLink Raffle
+ * @author Nick Kubarko
+ * @notice Raffle contract that allows users to enter a raffle and pick a winner randomly.
+ * @dev Uses ChainLink VRF to pick a winner randomly
+ * @dev and ChainLink Data Feed to get the price of the entrance fee.
+ */
+contract Raffle is Initializable, VRFConsumerBaseV2Upgradeable {
     event RaffleEntered(
         address indexed sender,
         uint256 amount,
         uint256 indexed round
     );
     event RaffleEntranceFeeUpdated(uint256 oldFee, uint256 newFee);
+    event RaffleDrawIntervalUpdated(uint256 previous, uint256 current);
     event RaffleRandomWordsRequested(uint256 indexed reqId, uint256 round);
     event RaffleWinnerPicked(
         address indexed winner,
@@ -41,14 +50,17 @@ contract Raffle is VRFConsumerBaseV2Plus {
         CALCULATING
     }
 
-    State public s_state = State.OPEN;
+    string public constant AUTHOR = "Nick Kubarko";
+    string public constant MY_GITHUB = "https://github.com/kubarenation";
 
-    AggregatorV3Interface internal immutable i_dataFeed;
+    State public s_state;
+
+    AggregatorV3Interface internal i_dataFeed;
 
     address[] public s_playersList;
     address[] public s_uniquePlayersList;
 
-    mapping(uint256 => address) public winners; // round number to winner address
+    mapping(uint256 => address) public s_winnerOfRound; // round number to winner address
     mapping(address => uint256) public s_winnerBalance; // balances of winners
 
     uint256 public s_recentDrawAt;
@@ -57,42 +69,71 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
     uint256 public s_roundsCount = 0;
 
+    // total entered funds balance for the current round
     uint256 public s_totalBalance = 0;
 
+    // total drawn funds amount for all time
     uint256 public s_totalFundsDrawn = 0;
 
     uint256 public s_ownerCommission = 0;
 
-    /// Entrance fee in USD
+    // Entrance fee in USD
     uint256 public s_entranceFee;
 
     uint256 public s_subscriptionId;
 
-    // 500 gwei
-    bytes32 public immutable i_keyHash =
-        0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
-    uint32 callbackGasLimit = 500000; // Increased for complex operations
-    uint16 requestConfirmations = 3;
-    uint32 numWords = 1;
+    IVRFCoordinatorV2Plus public s_vrfCoordinator;
 
-    address public immutable i_owner;
+    bytes32 public i_keyHash;
+    uint32 callbackGasLimit; // Increased for complex operations
+    uint16 requestConfirmations;
+    uint32 numWords;
 
-    /// interval in seconds
-    uint256 public immutable i_drawInterval;
+    address public i_owner;
 
-    constructor(
+    // draw interval in seconds
+    uint256 public i_drawInterval;
+
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(
         uint256 _entranceFeeUsd,
         address _dataFeed,
         uint256 _drawInterval,
         address _vrfCoordinator,
         uint256 _subId
-    ) VRFConsumerBaseV2Plus(_vrfCoordinator) {
-        s_entranceFee = _entranceFeeUsd;
+    ) public payable initializer {
+        // Валидация входных параметров
+        if (_dataFeed == address(0)) {
+            revert Raffle__ZeroAddress();
+        }
+        if (_vrfCoordinator == address(0)) {
+            revert Raffle__ZeroAddress();
+        }
+
         i_owner = msg.sender;
-        i_drawInterval = _drawInterval;
-        s_recentDrawAt = 0;
+        s_state = State.OPEN;
+
+        // set VRF Coordinator address
+        __VRFConsumerBaseV2_init(_vrfCoordinator);
+
         i_dataFeed = AggregatorV3Interface(_dataFeed);
+
+        // initialize VRF Coordinator
+        s_vrfCoordinator = IVRFCoordinatorV2Plus(_vrfCoordinator);
+
+        // 500 gwei
+        i_keyHash = 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae;
+        callbackGasLimit = 500000; // Increased for complex operations
+        requestConfirmations = 3;
+        numWords = 1;
+
+        s_entranceFee = _entranceFeeUsd;
+        i_drawInterval = _drawInterval;
         s_subscriptionId = _subId;
+        s_recentDrawAt = 0;
     }
 
     modifier onlyOwner_() {
@@ -180,7 +221,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
     function fulfillRandomWords(
         uint256 requestId,
-        uint256[] calldata randomWords
+        uint256[] memory randomWords
     ) internal override {
         if (s_waitingRequestId != requestId) {
             revert Raffle__VRFRequestIdNotMatch(s_waitingRequestId, requestId);
@@ -193,7 +234,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
         uint256 index = randomWords[0] % s_playersList.length;
         address winner = s_playersList[index];
 
-        winners[s_roundsCount] = winner;
+        s_winnerOfRound[s_roundsCount] = winner;
 
         uint256 round = s_roundsCount;
         uint256 winnerAmount = (s_totalBalance * 80) / 100;
@@ -256,6 +297,13 @@ contract Raffle is VRFConsumerBaseV2Plus {
         s_entranceFee = _val;
 
         emit RaffleEntranceFeeUpdated(oldFee, s_entranceFee);
+    }
+
+    function updateDrawInterval(uint256 _seconds) public onlyOwner_ {
+        uint256 _oldInterval = i_drawInterval;
+        i_drawInterval = _seconds;
+
+        emit RaffleDrawIntervalUpdated(_oldInterval, i_drawInterval);
     }
 
     function timePassedSinceRecentDraw() public view returns (uint256) {

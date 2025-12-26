@@ -1,32 +1,6 @@
 [
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_entranceFeeUsd",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_dataFeed",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_drawInterval",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "_vrfCoordinator",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_subId",
-        "type": "uint256"
-      }
-    ],
+    "inputs": [],
     "stateMutability": "nonpayable",
     "type": "constructor"
   },
@@ -44,27 +18,6 @@
       }
     ],
     "name": "OnlyCoordinatorCanFulfill",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "have",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "coordinator",
-        "type": "address"
-      }
-    ],
-    "name": "OnlyOwnerOrCoordinator",
     "type": "error"
   },
   {
@@ -171,7 +124,7 @@
   },
   {
     "inputs": [],
-    "name": "ZeroAddress",
+    "name": "Raffle__ZeroAddress",
     "type": "error"
   },
   {
@@ -179,50 +132,31 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "vrfCoordinator",
-        "type": "address"
+        "internalType": "uint8",
+        "name": "version",
+        "type": "uint8"
       }
     ],
-    "name": "CoordinatorSet",
+    "name": "Initialized",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "previous",
+        "type": "uint256"
       },
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "current",
+        "type": "uint256"
       }
     ],
-    "name": "OwnershipTransferRequested",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
-      }
-    ],
-    "name": "OwnershipTransferred",
+    "name": "RaffleDrawIntervalUpdated",
     "type": "event"
   },
   {
@@ -359,9 +293,28 @@
   },
   {
     "inputs": [],
-    "name": "acceptOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "name": "AUTHOR",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "MY_GITHUB",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -502,16 +455,36 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "owner",
-    "outputs": [
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_entranceFeeUsd",
+        "type": "uint256"
+      },
       {
         "internalType": "address",
-        "name": "",
+        "name": "_dataFeed",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_drawInterval",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_vrfCoordinator",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_subId",
+        "type": "uint256"
       }
     ],
-    "stateMutability": "view",
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -735,14 +708,20 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "s_winnerOfRound",
+    "outputs": [
+      {
         "internalType": "address",
-        "name": "_vrfCoordinator",
+        "name": "",
         "type": "address"
       }
     ],
-    "name": "setCoordinator",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -761,12 +740,12 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "_seconds",
+        "type": "uint256"
       }
     ],
-    "name": "transferOwnership",
+    "name": "updateDrawInterval",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -782,25 +761,6 @@
     "name": "updateEntranceFee",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "winners",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {

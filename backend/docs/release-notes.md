@@ -32,3 +32,13 @@ Sepolia:
 - Raffle `0xE429b5e972D1924eEa4Af628F6c9477F7b0A6F2f`
 - Proxy `0x22a5c0eB1B81681F7Aae283dbF00A51B43a914A9`
 - Proxy Admin `0xeDEF85Bd8E4d073f446E437BcC1209e78753eEe3`
+
+## v6
+
+Reworked Raffle contract to use `initialize` function. Fix unit-tests.
+
+Sepolia:
+
+- Implementation `0x7a65774a620E43DEA691a112A05724792892219A`
+- Proxy `0x22a5c0eB1B81681F7Aae283dbF00A51B43a914A9`
+- Proxy Admin `0xeDEF85Bd8E4d073f446E437BcC1209e78753eEe3`
