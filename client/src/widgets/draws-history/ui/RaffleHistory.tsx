@@ -1,13 +1,12 @@
+import RaffleWinnerItem from '@/features/raffle-winner-item/ui/RaffleWinnerItem';
 import { gqlPath } from '@/shared/config/gql-path';
 import { Box } from '@/shared/ui-kit/Box';
 import { IconBox } from '@/shared/ui-kit/IconBox';
-import { Text } from '@/shared/ui-kit/Typography';
-import { formatAddress } from '@/shared/utils/address';
 import { useQuery } from '@tanstack/react-query';
 import request, { gql } from 'graphql-request';
 import { Trophy } from 'lucide-react';
 import { useMemo } from 'react';
-import { formatEther, type Address } from 'viem';
+import { type Address } from 'viem';
 import { type IRaffleRoundRecord } from './RaffleRoundRecord';
 
 const GET_ROUNDS_HISTORY = gql`
@@ -50,9 +49,9 @@ function RaffleHistory({ items }: { items: IRaffleRoundRecord[] }) {
 
     const result = _winners.map((el) => {
       return {
-        winner: el.winner,
+        address: el.winner,
         round: Number(el.round),
-        fundsDrawn: formatEther(el.fundsDrawn),
+        fundsDrawn: el.fundsDrawn,
         participantsCount: Number(el.participantsCount),
         txHash: el.transactionHash,
       };
@@ -62,7 +61,7 @@ function RaffleHistory({ items }: { items: IRaffleRoundRecord[] }) {
   }, [winnersHistoryResponse]);
 
   return (
-    <div>
+    <Box dir='column' css={{ gap: '12px' }}>
       <Box css={{ gap: '6px', alignItems: 'center' }}>
         <IconBox colorType='lime'>
           <Trophy />
@@ -70,36 +69,37 @@ function RaffleHistory({ items }: { items: IRaffleRoundRecord[] }) {
         <h4>Draws History</h4>
       </Box>
 
-      {isPending ? (
-        <div>Loading...</div>
-      ) : (
+      {isPending && <div>Loading...</div>}
+
+      {!isPending && data.length > 0 && (
         <Box dir='column' css={{ gap: '1.5rem' }}>
           {data.map((item) => (
-            <Box dir='column' css={{ gap: '2px' }} key={item.txHash}>
-              <Text>Round #{item.round + 1}</Text>
-              <Text>
-                Winner{' '}
-                <a
-                  href={`https://sepolia.etherscan.io/address/${item.winner}`}
-                  target='_blank'
-                >
-                  {formatAddress(item.winner)}
-                </a>
-              </Text>
-              <Text>Funds drawn {item.fundsDrawn} ETH</Text>
-              <Text>Participants count {item.participantsCount}</Text>
+            <RaffleWinnerItem key={item.txHash} data={item} />
+            // <Box dir='column' css={{ gap: '2px' }} key={item.txHash}>
+            //   <Text>Round #{item.round + 1}</Text>
+            //   <Text>
+            //     Winner{' '}
+            //     <a
+            //       href={`https://sepolia.etherscan.io/address/${item.winner}`}
+            //       target='_blank'
+            //     >
+            //       {formatAddress(item.winner)}
+            //     </a>
+            //   </Text>
+            //   <Text>Funds drawn {item.fundsDrawn} ETH</Text>
+            //   <Text>Participants count {item.participantsCount}</Text>
 
-              <a
-                href={`https://sepolia.etherscan.io/tx/${item.txHash}`}
-                target='_blank'
-              >
-                see tx.
-              </a>
-            </Box>
+            //   <a
+            //     href={`https://sepolia.etherscan.io/tx/${item.txHash}`}
+            //     target='_blank'
+            //   >
+            //     see tx.
+            //   </a>
+            // </Box>
           ))}
         </Box>
       )}
-    </div>
+    </Box>
   );
 }
 

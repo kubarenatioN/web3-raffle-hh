@@ -78,7 +78,6 @@ function Dashboard() {
           <Section
             key={card.title}
             css={{
-              display: 'flex',
               flexDirection: 'column',
               alignItems: 'flex-start',
               flex: '1 1 25%',
@@ -88,10 +87,10 @@ function Dashboard() {
             <IconBox colorType={card.color as IconBoxColorType}>
               {card.icon}
             </IconBox>
-            <Text size='lg' weight='bold'>
-              {card.value}
+            <Text size='xl'>{card.value}</Text>
+            <Text size='sm' css={{ color: '$pinkWhite' }}>
+              {card.title}
             </Text>
-            <Text size='sm'>{card.title}</Text>
           </Section>
         );
       })}

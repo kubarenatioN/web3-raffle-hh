@@ -10,10 +10,7 @@ interface IProps {
   textDisconnected?: string;
 }
 
-function ConnectWalletBtn({
-  text = 'Connect Wallet',
-  textConnected = 'Disconnect Wallet',
-}: IProps) {
+function ConnectWalletBtn({ text = 'Connect Wallet' }: IProps) {
   const { isConnected, chain, address = '0x..' } = useConnection();
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
@@ -40,12 +37,25 @@ function ConnectWalletBtn({
 
   if (isConnected) {
     return (
-      <Box css={{ gap: '8px' }}>
-        <Button onClick={onDisconnect}>{textConnected}</Button>
-        <Box dir='column' css={{ gap: '2px' }}>
-          <Text>{addressPretty}</Text>
-          <Text size='sm'>{chainLabel}</Text>
+      <Box css={{ alignItems: 'center', gap: '12px' }}>
+        <Box dir='row' css={{ alignItems: 'baseline', gap: 4 }}>
+          <Text size='sm' css={{ color: '$pinkWhite' }}>
+            chain:
+          </Text>
+          <Text size='md'>{chainLabel}</Text>
         </Box>
+        <Button
+          onClick={onDisconnect}
+          css={{
+            background: '#45007533',
+            border: '1px solid',
+            borderColor: '$pink',
+            color: '$pink',
+          }}
+          title='Disconnect Wallet'
+        >
+          <Text as='span'>{addressPretty}</Text>
+        </Button>
       </Box>
     );
   }

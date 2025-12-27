@@ -1,7 +1,7 @@
-import { Button } from '@/shared/ui-kit/Button';
+import { Box, Button, FormInput } from '@/shared/ui-kit';
 import { useCallback, useState } from 'react';
 import { parseEther } from 'viem/utils';
-import { useWriteContract } from 'wagmi';
+import { useConnection, useWriteContract } from 'wagmi';
 import { raffleContract } from '../../../shared/config/contracts';
 
 interface IProps {
@@ -11,6 +11,7 @@ interface IProps {
 
 function RaffleEnter({ defaultBidAmount }: IProps) {
   const [bidAmount, setBidAmount] = useState<string | null>(null);
+  const { isConnected } = useConnection();
   const { writeContract, isPending: pendingWrite } = useWriteContract();
 
   const changeBidAmount = (value: string) => {
@@ -19,10 +20,11 @@ function RaffleEnter({ defaultBidAmount }: IProps) {
 
   const enterRaffle = useCallback(
     (value: string) => {
+      console.log('12');
+
       writeContract({
         ...raffleContract,
         functionName: 'enter',
-        args: [],
         value: parseEther(value),
       });
     },
@@ -30,22 +32,23 @@ function RaffleEnter({ defaultBidAmount }: IProps) {
   );
 
   return (
-    <div>
+    <Box dir='column' css={{ gap: '12px' }}>
       <div>
-        <label htmlFor='bid-amount'>Enter your bid amount:</label>
-        <br />
-        <input
-          id='bid-amount'
-          style={{ minWidth: 200 }}
+        <FormInput
           type='number'
+          label={'Your Bid Amount (ETH)'}
+          suffix='ETH'
+          inputMode='decimal'
           value={bidAmount != null ? bidAmount : defaultBidAmount}
           onChange={(e) => changeBidAmount(e.target.value)}
         />
       </div>
 
-      <div>
+      {isConnected ? (
         <Button
           disabled={pendingWrite}
+          size='lg'
+          variant='accent'
           onClick={() =>
             enterRaffle(
               String(bidAmount != null ? bidAmount : defaultBidAmount),
@@ -54,8 +57,12 @@ function RaffleEnter({ defaultBidAmount }: IProps) {
         >
           Enter raffle
         </Button>
-      </div>
-    </div>
+      ) : (
+        <Button size='lg' variant='success' disabled={true}>
+          Connect wallet to enter
+        </Button>
+      )}
+    </Box>
   );
 }
 

@@ -6,8 +6,6 @@ interface LayoutProps {
 }
 
 function Layout({ children }: LayoutProps) {
-  console.log('Layout called');
-
   return (
     <>
       <Header />
@@ -15,16 +13,18 @@ function Layout({ children }: LayoutProps) {
       <main className={styles.main}>{children}</main>
 
       <footer className={styles.footer}>
-        <p>
-          Made by{' '}
-          <a
-            href='https://github.com/kubarenatioN'
-            target='_blank'
-            rel='noopener noreferrer'
-          >
-            Nikita Kubarko
-          </a>
-        </p>
+        <div className={styles['footer-content']}>
+          <p>
+            Made by{' '}
+            <a
+              href='https://github.com/kubarenatioN'
+              target='_blank'
+              rel='noopener noreferrer'
+            >
+              Nikita Kubarko
+            </a>
+          </p>
+        </div>
       </footer>
     </>
   );

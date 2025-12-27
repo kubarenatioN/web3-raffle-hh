@@ -1,7 +1,5 @@
-import { Box } from '@/shared/ui-kit/Box';
-import { IconBox } from '@/shared/ui-kit/IconBox';
-import { Text } from '@/shared/ui-kit/Typography';
-import { Ticket } from 'lucide-react';
+import { Box, BoxCard, IconBox, InfoBlock, Text } from '@/shared/ui-kit';
+import { Coins, Ticket } from 'lucide-react';
 import { useMemo } from 'react';
 import { formatEther, formatUnits } from 'viem/utils';
 import { useReadContract, useReadContracts } from 'wagmi';
@@ -9,34 +7,43 @@ import { raffleContract } from '../../../shared/config/contracts';
 import RaffleEnter from '../../raffle-enter/ui/RaffleEnter';
 
 function CurrentRound() {
-  const { data: feePriceEthResponse = 0n } = useReadContract({
+  const { data: roundsCount } = useReadContract({
     ...raffleContract,
-    functionName: 'getFeePriceEth',
+    functionName: 's_roundsCount',
   });
 
-  const { data: [totalRoundBalanceResponse, dataFeedAnswerResponse] = [] } =
-    useReadContracts({
-      contracts: [
-        {
-          ...raffleContract,
-          functionName: 's_totalBalance',
-        },
-        {
-          ...raffleContract,
-          functionName: 'getPriceFeedAnswer',
-        },
-      ],
-    });
+  const { data: pricingData } = useReadContracts({
+    contracts: [
+      {
+        ...raffleContract,
+        functionName: 's_totalBalance',
+      },
+      {
+        ...raffleContract,
+        functionName: 'getPriceFeedAnswer',
+      },
+      {
+        ...raffleContract,
+        functionName: 'getFeePriceEth',
+      },
+    ],
+  });
+
+  const [
+    totalRoundBalanceResponse,
+    dataFeedAnswerResponse,
+    feePriceEthResponse,
+  ] = pricingData ?? [];
 
   const { result: totalRoundBalance = 0n } = totalRoundBalanceResponse ?? {};
   const { result: dataFeedAnswer = 0n } = dataFeedAnswerResponse ?? {};
+  const { result: feePriceEth = 0n } = feePriceEthResponse ?? {};
 
   const feePriceStr = useMemo(() => {
-    const res = feePriceEthResponse;
-    const feePrice = formatEther(res);
+    const feePrice = formatEther(feePriceEth);
 
     return feePrice;
-  }, [feePriceEthResponse]);
+  }, [feePriceEth]);
 
   const formattedFeePrice = useMemo(() => {
     const [integerPart, decimalPart = '000000'] = feePriceStr.split('.');
@@ -66,28 +73,34 @@ function CurrentRound() {
         <IconBox colorType='pink'>
           <Ticket />
         </IconBox>
-        <h4>Round #{1}</h4>
+        <h4>Round #{roundsCount != null ? roundsCount + 1n : ''}</h4>
       </Box>
 
-      <Box>
-        <Box dir='column' css={{ gap: '6px', '@bp1': { direction: 'row' } }}>
-          <div>
-            <Text weight='medium'>Prize pool</Text>
-            <br /> {roundPrizePoolEth} ETH
-          </div>
-          <Text as='span' size='sm'>
-            ≈${roundPrizePoolUsd} USD
+      <Box css={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
+        <BoxCard
+          dir='column'
+          css={{ gap: '8px', '@bp1': { direction: 'row' } }}
+        >
+          <Box css={{ alignItems: 'center', gap: '6px' }}>
+            <Coins color='#ffb000' size={18} />
+            <Text as='span' size='sm' css={{ color: '$pinkWhite' }}>
+              Prize pool
+            </Text>
+          </Box>
+          <Text size='xl'>{roundPrizePoolEth} ETH</Text>
+          <Text as='span' size='xs' css={{ color: '$pinkLight' }}>
+            ≈ ${roundPrizePoolUsd} USD
           </Text>
-        </Box>
+        </BoxCard>
       </Box>
 
-      <Box dir='column' css={{ gap: '6px' }}>
-        <Text>Minimum entry price: {formattedFeePrice} ETH</Text>
-        <Text size='sm' css={{ maxWidth: '420px' }}>
+      <InfoBlock>
+        <Text size='sm'>Minimum entry: {formattedFeePrice} ETH</Text>
+        <Text size='xs' weight='light'>
           Your chance of winning increases with your bid amount. Winner selected
           randomly using Chainlink VRF for provable fairness.
         </Text>
-      </Box>
+      </InfoBlock>
 
       <RaffleEnter defaultBidAmount={formattedFeePrice} />
     </Box>

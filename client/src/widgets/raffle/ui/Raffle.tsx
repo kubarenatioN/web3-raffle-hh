@@ -1,5 +1,5 @@
 import { raffleContract } from '@/shared/config/contracts';
-import { Box, Section, Text } from '@/shared/ui-kit';
+import { Box, SectionWrapper, Text } from '@/shared/ui-kit';
 import RaffleHistory from '@/widgets/draws-history/ui/RaffleHistory';
 import CurrentRound from '@/widgets/raffle-current-round/ui/CurrentRound';
 import RaffleParticipants from '@/widgets/raffle-participants/ui/RaffleParticipants';
@@ -14,28 +14,11 @@ import {
 import styles from './Raffle.module.css';
 
 function Raffle() {
-  const { address } = useConnection();
-  const { writeContract, isPending: pendingWrite } = useWriteContract();
-
-  const { data: raffleOwner } = useReadContract({
-    ...raffleContract,
-    functionName: 'i_owner',
-    args: [],
-  });
-
   useWatchContractEvent({
     ...raffleContract,
     eventName: 'RaffleWinnerPicked',
     enabled: true,
   });
-
-  const pickWinner = useCallback(() => {
-    writeContract({
-      ...raffleContract,
-      functionName: 'pickWinnerByOwner',
-      args: [],
-    });
-  }, [writeContract]);
 
   console.log('raffle called');
 
@@ -54,31 +37,57 @@ function Raffle() {
       <Dashboard />
 
       <div className={styles.grid}>
-        <Section>
+        <SectionWrapper>
           <CurrentRound />
-        </Section>
+        </SectionWrapper>
 
-        <Section className={styles.participants}>
+        <SectionWrapper className={styles.participants}>
           <RaffleParticipants />
-        </Section>
+        </SectionWrapper>
 
-        <Section>
+        <SectionWrapper>
           <RaffleHistory items={[]} />
-        </Section>
+        </SectionWrapper>
       </div>
 
-      {address === raffleOwner && (
-        <>
-          <hr />
-          <div>
-            <button disabled={pendingWrite} onClick={() => pickWinner()}>
-              Pick winner
-            </button>
-          </div>
-        </>
-      )}
+      <RaffleOwnerControls />
     </div>
   );
+}
+
+function RaffleOwnerControls() {
+  const { address } = useConnection();
+
+  const { writeContract, isPending: pendingWrite } = useWriteContract();
+
+  const { data: raffleOwner } = useReadContract({
+    ...raffleContract,
+    functionName: 'i_owner',
+    args: [],
+  });
+
+  const pickWinner = useCallback(() => {
+    writeContract({
+      ...raffleContract,
+      functionName: 'pickWinnerByOwner',
+      args: [],
+    });
+  }, [writeContract]);
+
+  if (address === raffleOwner) {
+    return (
+      <>
+        <hr />
+        <div>
+          <button disabled={pendingWrite} onClick={() => pickWinner()}>
+            Pick winner
+          </button>
+        </div>
+      </>
+    );
+  }
+
+  return null;
 }
 
 export default Raffle;

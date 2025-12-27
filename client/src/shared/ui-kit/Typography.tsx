@@ -6,6 +6,9 @@ export const Text = styled('p', {
 
   variants: {
     size: {
+      xs: {
+        fontSize: '0.72rem',
+      },
       sm: {
         fontSize: '0.875rem',
       },
@@ -20,6 +23,9 @@ export const Text = styled('p', {
       },
     },
     weight: {
+      light: {
+        fontWeight: '300',
+      },
       normal: {
         fontWeight: '400',
       },

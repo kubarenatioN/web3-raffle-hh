@@ -1,3 +1,4 @@
+import { raffleContract } from '@/shared/config/contracts';
 import { gqlPath } from '@/shared/config/gql-path';
 import { Box } from '@/shared/ui-kit/Box';
 import { IconBox } from '@/shared/ui-kit/IconBox';
@@ -8,11 +9,12 @@ import request, { gql } from 'graphql-request';
 import { Users, Wallet } from 'lucide-react';
 import { useMemo } from 'react';
 import { formatEther } from 'viem/utils';
+import { useReadContract } from 'wagmi';
 
 const GET_PARTICIPANTS = gql`
-  query GetParticipants {
+  query GetParticipants($round: Int) {
     raffleEntereds(
-      # where: { round: 0 }
+      where: { round: $round }
       first: 50
       orderBy: blockNumber
       orderDirection: desc
@@ -33,9 +35,20 @@ interface IRaffleEntered {
 }
 
 function RaffleParticipants() {
+  const { data: currentRound } = useReadContract({
+    ...raffleContract,
+    functionName: 's_roundsCount',
+  });
+
   const { data: participants, isPending } = useQuery({
     queryKey: ['participants'],
-    queryFn: () => request(gqlPath(), GET_PARTICIPANTS),
+    queryFn: () =>
+      request(gqlPath(), GET_PARTICIPANTS, {
+        round: Number(currentRound!.toString()),
+      }),
+    enabled: () => {
+      return currentRound != null;
+    },
   });
 
   const data = useMemo(() => {
@@ -61,9 +74,11 @@ function RaffleParticipants() {
         <h4>Current Participants</h4>
       </Box>
 
-      {isPending ? (
-        <div>Loading...</div>
-      ) : (
+      {isPending && <div>Loading...</div>}
+
+      {!isPending && data.length === 0 && <div>No data</div>}
+
+      {!isPending && data.length > 0 && (
         <Box
           dir='column'
           css={{

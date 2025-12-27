@@ -1,0 +1,80 @@
+import { Box, BoxCard, Text } from '@/shared/ui-kit';
+import Address from '@/shared/ui/Address/Address';
+import { CheckCircle, ExternalLink } from 'lucide-react';
+import { formatEther } from 'viem/utils';
+
+interface IRaffleWinnerItem {
+  address: string;
+  participantsCount: number;
+  fundsDrawn: bigint;
+  txHash: string;
+  round: number;
+}
+
+function RaffleWinnerItem({ data }: { data: IRaffleWinnerItem }) {
+  const { address, round, participantsCount, fundsDrawn, txHash } = data;
+
+  return (
+    <BoxCard
+      dir='column'
+      css={{
+        padding: '1.2rem 0.9rem',
+        gap: 12,
+        borderRadius: 8,
+      }}
+    >
+      <Box
+        css={{
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <Box css={{ alignItems: 'center', gap: '6px' }}>
+          <div>
+            <CheckCircle color='#00e100' size={20} />
+          </div>
+          <Text size='lg'>Round #{round + 1}</Text>
+        </Box>
+
+        <Box dir='column' css={{ alignItems: 'flex-end', gap: 6 }}>
+          <Text size='md' css={{ color: '#fdc700' }}>
+            {formatEther(fundsDrawn)} ETH
+          </Text>
+          <Text size='sm' css={{ color: '$pinkLight' }}>
+            {participantsCount} participants
+          </Text>
+        </Box>
+      </Box>
+
+      <Box
+        css={{
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingTop: '12px',
+          borderTop: '1px solid',
+          borderColor: '#b37bf647',
+        }}
+      >
+        <Box css={{ alignItems: 'baseline', gap: 6 }}>
+          <Text as='span' css={{ color: '$pinkWhite' }}>
+            Winner:
+          </Text>
+          <Address>{address}</Address>
+        </Box>
+
+        <a href={`https://sepolia.etherscan.io/tx/${txHash}`} target='_blank'>
+          <Text
+            as='span'
+            size='sm'
+            css={{ display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <span>View TX</span>
+            <ExternalLink size={16} />
+          </Text>
+        </a>
+      </Box>
+    </BoxCard>
+  );
+}
+
+export default RaffleWinnerItem;

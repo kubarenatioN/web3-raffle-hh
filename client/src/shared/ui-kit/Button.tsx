@@ -23,6 +23,10 @@ export const Button = styled('button', {
         backgroundColor: 'violet',
         color: 'white',
       },
+      success: {
+        backgroundColor: 'lime',
+        color: 'white',
+      },
     },
     size: {
       md: {
