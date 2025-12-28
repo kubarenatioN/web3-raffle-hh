@@ -83,7 +83,7 @@ function CurrentRound() {
         >
           <Box css={{ alignItems: 'center', gap: '6px' }}>
             <Coins color='#ffb000' size={18} />
-            <Text as='span' size='sm' css={{ color: '$pink100' }}>
+            <Text as='span' size='sm' css={{ color: '$pink-100' }}>
               Prize pool
             </Text>
           </Box>

@@ -20,11 +20,11 @@ export const Button = styled('button', {
         color: 'white',
       },
       accent: {
-        backgroundColor: 'violet',
+        backgroundColor: '$purple400',
         color: 'white',
       },
       success: {
-        backgroundColor: 'lime',
+        backgroundColor: '$success400',
         color: 'white',
       },
     },

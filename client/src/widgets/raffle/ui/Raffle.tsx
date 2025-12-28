@@ -4,6 +4,7 @@ import RaffleHistory from '@/widgets/draws-history/ui/RaffleHistory';
 import CurrentRound from '@/widgets/raffle-current-round/ui/CurrentRound';
 import RaffleParticipants from '@/widgets/raffle-participants/ui/RaffleParticipants';
 import Dashboard from '@/widgets/raffle-stats-dashboard/ui/Dashboard';
+import RaffleWithdraw from '@/widgets/raffle-withdraw/ui/RaffleWithdraw';
 import { useCallback } from 'react';
 import {
   useConnection,
@@ -20,7 +21,18 @@ function Raffle() {
     enabled: true,
   });
 
-  console.log('raffle called');
+  const { address } = useConnection();
+
+  // const { data: winnerBalance } = useReadContract({
+  //   ...raffleContract,
+  //   functionName: 's_winnerBalance',
+  //   args: [address!],
+  //   query: {
+  //     enabled: !!address,
+  //   },
+  // });
+
+  console.log('Raffle()');
 
   return (
     <div className={`Raffle ${styles.wrapper}`}>
@@ -37,13 +49,30 @@ function Raffle() {
       <Dashboard />
 
       <div className={styles.grid}>
-        <SectionWrapper>
-          <CurrentRound />
-        </SectionWrapper>
+        <Box dir='column' css={{ gap: 24 }}>
+          <SectionWrapper>
+            <CurrentRound />
+          </SectionWrapper>
 
-        <SectionWrapper className={styles.participants}>
-          <RaffleParticipants />
-        </SectionWrapper>
+          {address != null && (
+            <SectionWrapper css={{ minHeight: 400 }}>
+              <RaffleWithdraw address={address} />
+            </SectionWrapper>
+          )}
+        </Box>
+
+        <Box className={styles.participants}>
+          <SectionWrapper
+            css={{
+              flex: '1 1 100%',
+              maxHeight: '640px',
+              position: 'sticky',
+              top: 24,
+            }}
+          >
+            <RaffleParticipants />
+          </SectionWrapper>
+        </Box>
 
         <SectionWrapper>
           <RaffleHistory items={[]} />

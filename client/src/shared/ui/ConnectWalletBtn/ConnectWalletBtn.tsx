@@ -39,7 +39,7 @@ function ConnectWalletBtn({ text = 'Connect Wallet' }: IProps) {
     return (
       <Box css={{ alignItems: 'center', gap: '12px' }}>
         <Box dir='row' css={{ alignItems: 'baseline', gap: 4 }}>
-          <Text size='sm' css={{ color: '$pink100' }}>
+          <Text size='sm' css={{ color: '$pink-100' }}>
             chain:
           </Text>
           <Text size='sm' css={{ fontFamily: 'monospace' }}>

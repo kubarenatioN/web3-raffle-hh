@@ -23,7 +23,7 @@ const Wrapper = styled('div', {
   },
 });
 
-type ColorType = 'pink' | 'sky' | 'lime' | 'orange';
+type ColorType = 'pink' | 'sky' | 'lime' | 'orange' | 'greenblue';
 
 export function IconBox({
   children,
@@ -45,6 +45,8 @@ function colorTypeToColor(colorType: ColorType) {
       return 'linear-gradient(130deg,rgb(84, 238, 255) 0%,rgb(63, 115, 238) 100%)';
     case 'lime':
       return 'linear-gradient(150deg,rgb(104, 231, 35) 0%,rgb(0, 142, 21) 100%)';
+    case 'greenblue':
+      return 'linear-gradient(150deg,rgb(32, 249, 155) 0%,rgb(2, 149, 56) 100%)';
     case 'orange':
       return 'linear-gradient(140deg,rgb(255, 168, 76) 0%, rgb(232, 129, 3) 100%)';
     default:

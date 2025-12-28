@@ -4,7 +4,7 @@ import { Box } from '@/shared/ui-kit/Box';
 import { IconBox } from '@/shared/ui-kit/IconBox';
 import { useQuery } from '@tanstack/react-query';
 import request, { gql } from 'graphql-request';
-import { Trophy } from 'lucide-react';
+import { FileClock } from 'lucide-react';
 import { useMemo } from 'react';
 import { type Address } from 'viem';
 import { type IRaffleRoundRecord } from './RaffleRoundRecord';
@@ -64,7 +64,7 @@ function RaffleHistory({ items }: { items: IRaffleRoundRecord[] }) {
     <Box dir='column' css={{ gap: '12px' }}>
       <Box css={{ gap: '6px', alignItems: 'center' }}>
         <IconBox colorType='lime'>
-          <Trophy />
+          <FileClock />
         </IconBox>
         <h4>Draws History</h4>
       </Box>

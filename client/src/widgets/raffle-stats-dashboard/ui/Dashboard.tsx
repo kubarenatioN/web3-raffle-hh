@@ -88,7 +88,7 @@ function Dashboard() {
               {card.icon}
             </IconBox>
             <Text size='xl'>{card.value}</Text>
-            <Text size='sm' css={{ color: '$pink100' }}>
+            <Text size='sm' css={{ color: '$pink-100' }}>
               {card.title}
             </Text>
           </Section>

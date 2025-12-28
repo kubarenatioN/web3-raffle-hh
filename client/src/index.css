@@ -50,3 +50,20 @@ h1 {
   font-size: 3.2em;
   line-height: 1.1;
 }
+
+.success-gradient {
+  background: #00ee4675;
+  /* background: #57c785; */
+  /* background: linear-gradient(
+    143deg,
+    rgb(34 255 95 / 49%) 0%,
+    rgb(23 255 87 / 39%) 50%,
+    rgb(70 230 152 / 0%) 100%
+  ); */
+  background: linear-gradient(
+    143deg,
+    rgb(11 233 98 / 56%) 0%,
+    rgb(8 221 73 / 37%) 50%,
+    rgb(21 225 126 / 13%) 100%
+  );
+}

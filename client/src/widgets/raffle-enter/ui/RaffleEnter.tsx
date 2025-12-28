@@ -20,8 +20,6 @@ function RaffleEnter({ defaultBidAmount }: IProps) {
 
   const enterRaffle = useCallback(
     (value: string) => {
-      console.log('12');
-
       writeContract({
         ...raffleContract,
         functionName: 'enter',
@@ -30,6 +28,8 @@ function RaffleEnter({ defaultBidAmount }: IProps) {
     },
     [writeContract],
   );
+
+  console.log(defaultBidAmount);
 
   return (
     <Box dir='column' css={{ gap: '12px' }}>

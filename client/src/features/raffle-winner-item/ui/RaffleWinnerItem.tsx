@@ -58,7 +58,7 @@ function RaffleWinnerItem({ data }: { data: IRaffleWinnerItem }) {
         <Box css={{ alignItems: 'center', gap: 8 }}>
           <Trophy color='#fdc700' size={16} />
           <Box css={{ alignItems: 'baseline', gap: 4 }}>
-            <Text as='span' css={{ color: '$pink100' }}>
+            <Text as='span' css={{ color: '$pink-100' }}>
               Winner:
             </Text>
             <Address>{address}</Address>

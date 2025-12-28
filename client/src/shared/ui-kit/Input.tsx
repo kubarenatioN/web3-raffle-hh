@@ -10,7 +10,7 @@ type IProps = {
 } & InputHTMLAttributes<HTMLInputElement>;
 
 const labelCss = css({
-  color: '$pink100',
+  color: '$pink-100',
 });
 
 export function FormInput({ label = null, suffix = null, ...rest }: IProps) {
