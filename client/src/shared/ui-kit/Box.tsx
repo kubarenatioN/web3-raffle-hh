@@ -40,5 +40,5 @@ export const BoxCard = styled(Box, {
   // border: '1px solid',
   // borderColor: '#d1d1d157',
   borderRadius: 8,
-  background: 'rgb(62, 6, 97)',
+  background: '$dark400',
 });

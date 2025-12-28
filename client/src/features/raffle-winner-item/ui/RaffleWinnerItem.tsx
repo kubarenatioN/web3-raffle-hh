@@ -1,6 +1,6 @@
 import { Box, BoxCard, Text } from '@/shared/ui-kit';
 import Address from '@/shared/ui/Address/Address';
-import { CheckCircle, ExternalLink } from 'lucide-react';
+import { CheckCircle, ExternalLink, Trophy } from 'lucide-react';
 import { formatEther } from 'viem/utils';
 
 interface IRaffleWinnerItem {
@@ -40,7 +40,7 @@ function RaffleWinnerItem({ data }: { data: IRaffleWinnerItem }) {
           <Text size='md' css={{ color: '#fdc700' }}>
             {formatEther(fundsDrawn)} ETH
           </Text>
-          <Text size='sm' css={{ color: '$pinkLight' }}>
+          <Text size='sm' css={{ color: '$pink300' }}>
             {participantsCount} participants
           </Text>
         </Box>
@@ -55,11 +55,14 @@ function RaffleWinnerItem({ data }: { data: IRaffleWinnerItem }) {
           borderColor: '#b37bf647',
         }}
       >
-        <Box css={{ alignItems: 'baseline', gap: 6 }}>
-          <Text as='span' css={{ color: '$pinkWhite' }}>
-            Winner:
-          </Text>
-          <Address>{address}</Address>
+        <Box css={{ alignItems: 'center', gap: 8 }}>
+          <Trophy color='#fdc700' size={16} />
+          <Box css={{ alignItems: 'baseline', gap: 4 }}>
+            <Text as='span' css={{ color: '$pink100' }}>
+              Winner:
+            </Text>
+            <Address>{address}</Address>
+          </Box>
         </Box>
 
         <a href={`https://sepolia.etherscan.io/tx/${txHash}`} target='_blank'>

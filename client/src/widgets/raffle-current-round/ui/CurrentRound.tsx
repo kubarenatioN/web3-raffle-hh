@@ -83,12 +83,12 @@ function CurrentRound() {
         >
           <Box css={{ alignItems: 'center', gap: '6px' }}>
             <Coins color='#ffb000' size={18} />
-            <Text as='span' size='sm' css={{ color: '$pinkWhite' }}>
+            <Text as='span' size='sm' css={{ color: '$pink100' }}>
               Prize pool
             </Text>
           </Box>
           <Text size='xl'>{roundPrizePoolEth} ETH</Text>
-          <Text as='span' size='xs' css={{ color: '$pinkLight' }}>
+          <Text as='span' size='xs' css={{ color: '$pink300' }}>
             ≈ ${roundPrizePoolUsd} USD
           </Text>
         </BoxCard>

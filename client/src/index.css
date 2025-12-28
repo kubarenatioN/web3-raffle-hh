@@ -23,11 +23,11 @@
 
 a {
   font-weight: 500;
-  color: #a6deff;
+  color: #8fb8ff;
   text-decoration: inherit;
 }
 a:hover {
-  color: #eb9cff;
+  color: #8886ff;
 }
 
 body {
@@ -39,19 +39,10 @@ body.dark {
   color: #fff;
   background: #2d064f;
   background-image: linear-gradient(
-    to left top,
-    #3c0288,
-    #460396,
-    #5103a4,
-    #5c03b2,
-    #6703c0,
-    #6305bc,
-    #5e07b7,
-    #5a09b3,
-    #450a9b,
-    #320983,
-    #20076c,
-    #0f0455
+    to bottom right in oklab,
+    oklch(0.208 0.042 265.755) 0%,
+    oklch(0.381 0.176 304.987) 50%,
+    oklch(0.208 0.042 265.755) 100%
   );
 }
 

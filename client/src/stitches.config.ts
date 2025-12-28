@@ -3,11 +3,10 @@ import { createStitches } from '@stitches/react';
 export const { styled, css } = createStitches({
   theme: {
     colors: {
-      gray400: 'gainsboro',
-      gray500: 'lightgray',
-      pinkWhite: '#e9d4ff',
-      pinkLight: '#dab2ff',
-      pink: '#c27aff',
+      pink100: '#e9d4ff',
+      pink300: '#dab2ff',
+      pink400: '#c27aff',
+      dark400: '#2e0155',
     },
   },
   utils: {
