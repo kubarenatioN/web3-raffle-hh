@@ -18,6 +18,7 @@ dataSources:
       entities:
         - RaffleEntered
         - RaffleWinnerPicked
+        - RaffleWinnerFundsSent
       abis:
         - name: Raffle
           file: ./abis/Raffle.json
@@ -26,4 +27,6 @@ dataSources:
           handler: handleRaffleEntered
         - event: RaffleWinnerPicked(indexed address,indexed uint256,uint256,uint256)
           handler: handleRaffleWinnerPicked
+        - event: RaffleWinnerFundsSent(indexed address,uint256)
+          handler: handleRaffleWinnerFundsSent
       file: ./src/raffle.ts

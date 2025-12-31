@@ -1,7 +1,9 @@
-import { Box, Button, FormInput } from '@/shared/ui-kit';
-import { useCallback, useState } from 'react';
+import { Box, Button, FormInput, Text } from '@/shared/ui-kit';
+import { ethToUsd } from '@/shared/utils/converters';
+import { css } from '@/stitches.config';
+import { useCallback, useMemo, useState } from 'react';
 import { parseEther } from 'viem/utils';
-import { useConnection, useWriteContract } from 'wagmi';
+import { useConnection, useReadContract, useWriteContract } from 'wagmi';
 import { raffleContract } from '../../../shared/config/contracts';
 
 interface IProps {
@@ -29,20 +31,47 @@ function RaffleEnter({ defaultBidAmount }: IProps) {
     [writeContract],
   );
 
-  console.log(defaultBidAmount);
+  const { data: priceFeedAnswer } = useReadContract({
+    ...raffleContract,
+    functionName: 'getPriceFeedAnswer',
+  });
+
+  const enterAmountUSD = useMemo(() => {
+    if (priceFeedAnswer == null) {
+      return 0;
+    }
+
+    let amount = 0;
+    if (bidAmount == null) {
+      amount = Number.parseFloat(defaultBidAmount);
+    } else {
+      amount = Number.isNaN(Number(bidAmount)) ? 0 : Number(bidAmount);
+    }
+
+    return ethToUsd(amount, priceFeedAnswer);
+  }, [bidAmount, priceFeedAnswer, defaultBidAmount]);
 
   return (
     <Box dir='column' css={{ gap: '12px' }}>
-      <div>
+      <Box dir='column' css={{ gap: '6px' }}>
         <FormInput
           type='number'
-          label={'Your Bid Amount (ETH)'}
+          label={
+            <label className={`${css({ color: '$pink-100' })}`}>
+              Your Bid Amount (ETH)
+            </label>
+          }
           suffix='ETH'
+          min={0}
           inputMode='decimal'
           value={bidAmount != null ? bidAmount : defaultBidAmount}
           onChange={(e) => changeBidAmount(e.target.value)}
+          step='0.001'
         />
-      </div>
+        <Text size='xs' css={{ color: '$pink300' }}>
+          ≈ ${enterAmountUSD.toFixed(4)} USD
+        </Text>
+      </Box>
 
       {isConnected ? (
         <Button

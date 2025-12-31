@@ -1,23 +1,23 @@
 import {
+  RaffleEntered as RaffleEnteredEvent,
   // CoordinatorSet as CoordinatorSetEvent,
   // OwnershipTransferRequested as OwnershipTransferRequestedEvent,
   // OwnershipTransferred as OwnershipTransferredEvent,
   // RaffleEntranceFeeUpdated as RaffleEntranceFeeUpdatedEvent,
   // RaffleOwnerFundsSent as RaffleOwnerFundsSentEvent,
   // RaffleRandomWordsRequested as RaffleRandomWordsRequestedEvent,
-  // RaffleWinnerFundsSent as RaffleWinnerFundsSentEvent,
-  RaffleEntered as RaffleEnteredEvent,
+  RaffleWinnerFundsSent as RaffleWinnerFundsSentEvent,
   RaffleWinnerPicked as RaffleWinnerPickedEvent,
 } from '../generated/Raffle/Raffle'
 import {
+  RaffleEntered,
   // CoordinatorSet,
   // OwnershipTransferRequested,
   // OwnershipTransferred,
   // RaffleEntranceFeeUpdated,
   // RaffleOwnerFundsSent,
   // RaffleRandomWordsRequested,
-  // RaffleWinnerFundsSent,
-  RaffleEntered,
+  RaffleWinnerFundsSent,
   RaffleWinnerPicked,
 } from '../generated/schema'
 
@@ -105,17 +105,17 @@ export function handleRaffleEntered(event: RaffleEnteredEvent): void {
 //   entity.save()
 // }
 
-// export function handleRaffleWinnerFundsSent(event: RaffleWinnerFundsSentEvent): void {
-//   let entity = new RaffleWinnerFundsSent(event.transaction.hash.concatI32(event.logIndex.toI32()))
-//   entity.receiver = event.params.receiver
-//   entity.amount = event.params.amount
+export function handleRaffleWinnerFundsSent(event: RaffleWinnerFundsSentEvent): void {
+  let entity = new RaffleWinnerFundsSent(event.transaction.hash.concatI32(event.logIndex.toI32()))
+  entity.receiver = event.params.receiver
+  entity.amount = event.params.amount
 
-//   entity.blockNumber = event.block.number
-//   entity.blockTimestamp = event.block.timestamp
-//   entity.transactionHash = event.transaction.hash
+  entity.blockNumber = event.block.number
+  entity.blockTimestamp = event.block.timestamp
+  entity.transactionHash = event.transaction.hash
 
-//   entity.save()
-// }
+  entity.save()
+}
 
 export function handleRaffleWinnerPicked(event: RaffleWinnerPickedEvent): void {
   let entity = new RaffleWinnerPicked(event.transaction.hash.concatI32(event.logIndex.toI32()))

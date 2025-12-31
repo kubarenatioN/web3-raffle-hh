@@ -21,6 +21,9 @@ export const Text = styled('p', {
       xl: {
         fontSize: '1.25rem',
       },
+      '2xl': {
+        fontSize: '1.5rem',
+      },
     },
     weight: {
       light: {

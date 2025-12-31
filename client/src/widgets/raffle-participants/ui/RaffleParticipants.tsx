@@ -112,8 +112,13 @@ function RaffleParticipants() {
                     {formatAddress(el.sender)}
                   </Text>
                 </Box>
-                <Box css={{ justifyContent: 'space-between' }}>
-                  <Text size='sm' css={{ color: '#dab2ff' }}>
+                <Box
+                  css={{
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                  }}
+                >
+                  <Text size='xs' css={{ color: '$pink300' }}>
                     Bid amount
                   </Text>
                   <Text size='sm'>{el.amount} ETH</Text>

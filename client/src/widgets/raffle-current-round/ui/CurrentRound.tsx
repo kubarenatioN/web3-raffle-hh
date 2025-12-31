@@ -64,7 +64,7 @@ function CurrentRound() {
 
     const formattedUsd = formatUnits(totalRoundBalanceWei, 18);
 
-    return Number(formattedUsd).toFixed(2);
+    return Number(formattedUsd);
   }, [totalRoundBalance, dataFeedAnswer]);
 
   return (
@@ -89,7 +89,7 @@ function CurrentRound() {
           </Box>
           <Text size='xl'>{roundPrizePoolEth} ETH</Text>
           <Text as='span' size='xs' css={{ color: '$pink300' }}>
-            ≈ ${roundPrizePoolUsd} USD
+            ≈ ${roundPrizePoolUsd.toFixed(4)} USD
           </Text>
         </BoxCard>
       </Box>

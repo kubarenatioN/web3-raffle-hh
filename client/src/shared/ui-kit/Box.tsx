@@ -37,8 +37,6 @@ export const SectionWrapper = styled('div', {
 
 export const BoxCard = styled(Box, {
   padding: '1.1rem',
-  // border: '1px solid',
-  // borderColor: '#d1d1d157',
   borderRadius: 8,
   background: '$dark400',
 });

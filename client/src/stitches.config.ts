@@ -7,6 +7,8 @@ export const { styled, css } = createStitches({
       pink300: '#dab2ff',
       pink400: '#c27aff',
       purple400: '#bf1fe3',
+      green100: '#a8f6d1',
+      green200: '#96ffa4',
       dark400: '#2e0155',
       success400: '#028c3f',
     },

@@ -18,3 +18,12 @@
 .participants {
   grid-row: span 2;
 }
+
+.withdraw-wrapper {
+  background: #02b92133;
+  background: linear-gradient(
+    161deg,
+    rgb(0 176 59 / 25%) 0%,
+    rgb(0 154 63 / 13%) 100%
+  );
+}

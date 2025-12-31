@@ -1,30 +1,30 @@
-import { css, styled } from '@/stitches.config';
-import type { InputHTMLAttributes } from 'react';
-import { useId } from 'react';
+import { styled } from '@/stitches.config';
+import type { InputHTMLAttributes, ReactElement } from 'react';
+import { cloneElement, isValidElement, useId } from 'react';
 import { Box } from './Box';
 import styles from './Input.module.css';
 
 type IProps = {
-  label?: string | null;
+  label?: ReactElement<HTMLLabelElement, 'label'> | null;
   suffix?: string | null;
 } & InputHTMLAttributes<HTMLInputElement>;
 
-const labelCss = css({
-  color: '$pink-100',
-});
-
 export function FormInput({ label = null, suffix = null, ...rest }: IProps) {
-  const id = useId();
+  const _id = useId();
   const _labelCmp = label ? (
-    <label htmlFor={id} className={`${styles.label} ${labelCss()}`}>
-      {label}
-    </label>
+    isValidElement(label) && label.type === 'label' ? (
+      cloneElement(label, { htmlFor: _id })
+    ) : (
+      <label htmlFor={_id}>{label}</label>
+    )
   ) : null;
 
   return (
     <Box dir='column' className={`${styles.container}`}>
-      {_labelCmp}
-      <Input {...rest} id={id} className={`${styles['no-spinner']}`} />
+      {_labelCmp && <div className={`${styles.label}`}>{_labelCmp}</div>}
+
+      <Input {...rest} id={_id} className={`${styles['no-spinner']}`} />
+
       {suffix && <span className={`${styles.suffix}`}>{suffix}</span>}
     </Box>
   );
