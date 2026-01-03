@@ -57,7 +57,7 @@ function Raffle() {
           {address != null && (
             <SectionWrapper
               className={`${styles['withdraw-wrapper']}`}
-              css={{ minHeight: 400 }}
+              css={{ borderColor: '#00c95180' }}
             >
               <RaffleWithdraw address={address} />
             </SectionWrapper>

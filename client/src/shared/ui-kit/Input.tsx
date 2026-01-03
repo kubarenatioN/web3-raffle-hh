@@ -23,7 +23,11 @@ export function FormInput({ label = null, suffix = null, ...rest }: IProps) {
     <Box dir='column' className={`${styles.container}`}>
       {_labelCmp && <div className={`${styles.label}`}>{_labelCmp}</div>}
 
-      <Input {...rest} id={_id} className={`${styles['no-spinner']}`} />
+      <Input
+        {...rest}
+        id={_id}
+        className={`${styles.input} ${styles['no-spinner']}`}
+      />
 
       {suffix && <span className={`${styles.suffix}`}>{suffix}</span>}
     </Box>
@@ -34,9 +38,9 @@ export const Input = styled('input', {
   appearance: 'none',
   font: 'inherit',
   padding: '0.6rem 0.8rem',
-  background: '#3e0661',
+  background: 'rgb(37 7 73 / 42%)',
   borderRadius: '8px',
   border: '1px solid',
-  borderColor: '#360050',
+  borderColor: 'rgb(163 163 163 / 45%)',
   color: '#fff',
 });

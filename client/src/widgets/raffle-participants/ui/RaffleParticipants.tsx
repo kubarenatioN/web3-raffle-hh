@@ -1,3 +1,4 @@
+import Placeholder from '@/features/placeholders/ui/Placeholder';
 import { raffleContract } from '@/shared/config/contracts';
 import { gqlPath } from '@/shared/config/gql-path';
 import { Box } from '@/shared/ui-kit/Box';
@@ -66,7 +67,7 @@ function RaffleParticipants() {
   }, [participants]);
 
   return (
-    <div style={{ overflowWrap: 'anywhere' }}>
+    <Box dir='column' css={{ gap: '1rem', height: '100%' }}>
       <Box css={{ gap: '6px', alignItems: 'center' }}>
         <IconBox colorType='sky'>
           <Users />
@@ -74,16 +75,30 @@ function RaffleParticipants() {
         <h4>Current Participants</h4>
       </Box>
 
-      {isPending && <div>Loading...</div>}
+      {isPending && (
+        <Box
+          dir='column'
+          css={{ display: 'grid', flexGrow: 1, placeItems: 'center' }}
+        >
+          <Placeholder type='loading' />
+        </Box>
+      )}
 
-      {!isPending && data.length === 0 && <div>No data</div>}
+      {!isPending && data.length === 0 && (
+        <Box
+          dir='column'
+          css={{ display: 'grid', flexGrow: 1, placeItems: 'center' }}
+        >
+          <Placeholder type='empty' />
+        </Box>
+      )}
 
       {!isPending && data.length > 0 && (
         <Box
           dir='column'
           css={{
             gap: '0.8rem',
-            padding: '0.8rem 0',
+            overflowY: 'auto',
           }}
         >
           {data.map((el, i) => {
@@ -128,7 +143,7 @@ function RaffleParticipants() {
           })}
         </Box>
       )}
-    </div>
+    </Box>
   );
 }
 

@@ -2,7 +2,6 @@ import { raffleContract } from '@/shared/config/contracts';
 import { gqlPath } from '@/shared/config/gql-path';
 import {
   Box,
-  BoxCard,
   Button,
   FormInput,
   IconBox,
@@ -13,10 +12,11 @@ import { ethToUsd } from '@/shared/utils/converters';
 import { css } from '@/stitches.config';
 import { useQuery } from '@tanstack/react-query';
 import request, { gql } from 'graphql-request';
-import { BanknoteArrowDown, Coins, Trophy } from 'lucide-react';
+import { Coins, Trophy } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { formatEther, parseEther, type Address } from 'viem';
 import { useReadContract, useWriteContract } from 'wagmi';
+import WithdrawItem from './WithdrawItem';
 
 const GET_WITHDRAW_HISTORY = gql`
   query GetWithdrawHistory($dest: Bytes) {
@@ -66,7 +66,7 @@ function RaffleWithdraw({ address }: { address: Address }) {
     return [];
   }, [withdrawHistory]);
 
-  const { data: winnerBalance } = useReadContract({
+  const { data: winnerBalance = 0n } = useReadContract({
     ...raffleContract,
     functionName: 's_winnerBalance',
     args: [address!],
@@ -84,7 +84,7 @@ function RaffleWithdraw({ address }: { address: Address }) {
       return 0n;
     }
 
-    const amount = Number.parseFloat(formatEther(winnerBalance ?? 0n));
+    const amount = Number.parseFloat(formatEther(winnerBalance));
 
     const result = ethToUsd(amount, priceFeedAnswer);
     return result.toFixed(4);
@@ -97,7 +97,7 @@ function RaffleWithdraw({ address }: { address: Address }) {
 
     let amount = 0;
     if (withdrawAmount == null) {
-      amount = Number.parseFloat(formatEther(winnerBalance ?? 0n));
+      amount = Number.parseFloat(formatEther(winnerBalance));
     } else {
       amount = Number.isNaN(Number(withdrawAmount))
         ? 0
@@ -109,7 +109,7 @@ function RaffleWithdraw({ address }: { address: Address }) {
 
   const withdraw = () => {
     const amount =
-      withdrawAmount == null ? winnerBalance ?? 0n : parseEther(withdrawAmount);
+      withdrawAmount == null ? winnerBalance : parseEther(withdrawAmount);
     writeContract({
       ...raffleContract,
       functionName: 'withdraw',
@@ -142,7 +142,7 @@ function RaffleWithdraw({ address }: { address: Address }) {
           <Text size='sm' css={{ color: '$green100' }}>
             Total Unclaimed
           </Text>
-          <Text size='2xl'>{formatEther(winnerBalance ?? 0n)} ETH</Text>
+          <Text size='2xl'>{formatEther(winnerBalance)} ETH</Text>
           <Text size='sm' css={{ color: '$green200' }}>
             ≈ ${totalWithdrawAmountUSD} USD
           </Text>
@@ -153,7 +153,7 @@ function RaffleWithdraw({ address }: { address: Address }) {
             color: '$green100',
             opacity: 0.5,
           })}`}
-          size={56}
+          size={48}
         />
       </Section>
 
@@ -165,12 +165,10 @@ function RaffleWithdraw({ address }: { address: Address }) {
           step='0.001'
           inputMode='decimal'
           value={
-            withdrawAmount != null
-              ? withdrawAmount
-              : formatEther(winnerBalance ?? 0n)
+            withdrawAmount != null ? withdrawAmount : formatEther(winnerBalance)
           }
           min={0}
-          disabled={isPending}
+          disabled={isPending || !winnerBalance}
           onChange={(e) => setWithdrawAmount(e.target.value)}
         />
         <Text size='xs'>≈ ${withdrawAmountUSD?.toFixed(4)} USD</Text>
@@ -180,28 +178,14 @@ function RaffleWithdraw({ address }: { address: Address }) {
         size='lg'
         variant='success'
         onClick={() => withdraw()}
-        disabled={isPending}
+        disabled={isPending || !winnerBalance}
       >
         {isPending ? 'Withdrawing...' : 'Withdraw'}
       </Button>
 
       <Box dir='column' css={{ gap: 12 }}>
         {withdrawHistoryItems.map((item) => (
-          <BoxCard dir='column' css={{ gap: 4 }} key={item.id}>
-            <BanknoteArrowDown />
-            <Text>{formatEther(item.amount)} ETH</Text>
-            <Text>
-              at: {new Date(item.blockTimestamp * 1000).toLocaleString()}
-            </Text>
-            <Text>
-              <a
-                href={`https://sepolia.etherscan.io/tx/${item.transactionHash}`}
-                target='_blank'
-              >
-                View TX
-              </a>
-            </Text>
-          </BoxCard>
+          <WithdrawItem key={item.id} data={item} />
         ))}
       </Box>
     </Box>

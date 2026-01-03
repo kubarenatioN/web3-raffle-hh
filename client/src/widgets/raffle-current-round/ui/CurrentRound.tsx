@@ -68,7 +68,7 @@ function CurrentRound() {
   }, [totalRoundBalance, dataFeedAnswer]);
 
   return (
-    <Box dir='column' css={{ gap: '1.5rem' }}>
+    <Box dir='column' css={{ gap: '1rem' }}>
       <Box css={{ gap: '6px', alignItems: 'center' }}>
         <IconBox colorType='pink'>
           <Ticket />

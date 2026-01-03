@@ -18,7 +18,7 @@ function RaffleWinnerItem({ data }: { data: IRaffleWinnerItem }) {
     <BoxCard
       dir='column'
       css={{
-        padding: '1.2rem 0.9rem',
+        padding: '1.1rem 0.9rem 1rem',
         gap: 12,
         borderRadius: 8,
       }}
@@ -30,17 +30,15 @@ function RaffleWinnerItem({ data }: { data: IRaffleWinnerItem }) {
         }}
       >
         <Box css={{ alignItems: 'center', gap: '6px' }}>
-          <div>
-            <CheckCircle color='#00e100' size={20} />
-          </div>
+          <CheckCircle color='#00e100' size={18} />
           <Text size='lg'>Round #{round + 1}</Text>
         </Box>
 
         <Box dir='column' css={{ alignItems: 'flex-end', gap: 6 }}>
-          <Text size='md' css={{ color: '#fdc700' }}>
+          <Text size='md' css={{ color: '$gold-400' }}>
             {formatEther(fundsDrawn)} ETH
           </Text>
-          <Text size='sm' css={{ color: '$pink300' }}>
+          <Text size='xs' css={{ color: '$pink300' }}>
             {participantsCount} participants
           </Text>
         </Box>
@@ -50,7 +48,7 @@ function RaffleWinnerItem({ data }: { data: IRaffleWinnerItem }) {
         css={{
           justifyContent: 'space-between',
           alignItems: 'center',
-          paddingTop: '12px',
+          paddingTop: '1rem',
           borderTop: '1px solid',
           borderColor: '#b37bf647',
         }}

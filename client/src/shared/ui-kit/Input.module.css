@@ -18,6 +18,11 @@
   padding-bottom: 8px;
 }
 
+.input[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .no-spinner {
   -moz-appearance: textfield; /* Firefox */
   appearance: none; /* Modern browsers */

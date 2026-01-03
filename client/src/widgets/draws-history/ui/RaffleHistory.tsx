@@ -11,7 +11,7 @@ import { type IRaffleRoundRecord } from './RaffleRoundRecord';
 
 const GET_ROUNDS_HISTORY = gql`
   query GetWinnersHistory {
-    raffleWinnerPickeds(first: 10) {
+    raffleWinnerPickeds(first: 10, orderBy: blockNumber, orderDirection: desc) {
       id
       round
       winner
@@ -72,30 +72,9 @@ function RaffleHistory({ items }: { items: IRaffleRoundRecord[] }) {
       {isPending && <div>Loading...</div>}
 
       {!isPending && data.length > 0 && (
-        <Box dir='column' css={{ gap: '1.5rem' }}>
+        <Box dir='column' css={{ gap: '1rem' }}>
           {data.map((item) => (
             <RaffleWinnerItem key={item.txHash} data={item} />
-            // <Box dir='column' css={{ gap: '2px' }} key={item.txHash}>
-            //   <Text>Round #{item.round + 1}</Text>
-            //   <Text>
-            //     Winner{' '}
-            //     <a
-            //       href={`https://sepolia.etherscan.io/address/${item.winner}`}
-            //       target='_blank'
-            //     >
-            //       {formatAddress(item.winner)}
-            //     </a>
-            //   </Text>
-            //   <Text>Funds drawn {item.fundsDrawn} ETH</Text>
-            //   <Text>Participants count {item.participantsCount}</Text>
-
-            //   <a
-            //     href={`https://sepolia.etherscan.io/tx/${item.txHash}`}
-            //     target='_blank'
-            //   >
-            //     see tx.
-            //   </a>
-            // </Box>
           ))}
         </Box>
       )}

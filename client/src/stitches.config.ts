@@ -9,8 +9,11 @@ export const { styled, css } = createStitches({
       purple400: '#bf1fe3',
       green100: '#a8f6d1',
       green200: '#96ffa4',
+      'green-400': '#00e100',
+      'green-700': '#155437',
       dark400: '#2e0155',
       success400: '#028c3f',
+      'gold-400': '#fdc700',
     },
   },
   utils: {

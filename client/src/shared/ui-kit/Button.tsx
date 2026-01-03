@@ -7,6 +7,7 @@ export const Button = styled('button', {
   backgroundColor: 'transparent',
   color: 'inherit',
   cursor: 'pointer',
+  textAlign: 'center',
 
   '&[disabled]': {
     cursor: 'not-allowed',
@@ -17,18 +18,31 @@ export const Button = styled('button', {
     variant: {
       primary: {
         backgroundColor: 'rgb(138 138 138)',
-        color: 'white',
+        color: '#fff',
       },
       accent: {
         backgroundColor: '$purple400',
-        color: 'white',
+        color: '#fff',
       },
       success: {
         backgroundColor: '$success400',
-        color: 'white',
+        color: '#fff',
+      },
+      outline: {
+        backgroundColor: 'rgb(172 123 210 / 19%)',
+        boxShadow: '0px 0px 0px 1px rgb(202 155 242 / 45%)',
+        color: '$pink300',
+        '&:hover': {
+          color: '$pink-100',
+        },
       },
     },
     size: {
+      sm: {
+        padding: '0.4rem 0.8rem',
+        fontSize: '0.88rem',
+        borderRadius: '4px',
+      },
       md: {
         padding: '0.6rem 1.2rem',
         fontSize: '0.96rem',
