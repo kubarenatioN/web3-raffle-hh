@@ -6,7 +6,7 @@ import styles from './Header.module.css';
 function Header() {
   return (
     <header className={styles.header}>
-      <Box className={styles.container}>
+      <div className={styles.container}>
         <Box align='center' gap='sm'>
           <IconBox colorType='pink'>
             <Trophy />
@@ -31,7 +31,7 @@ function Header() {
         <div className={styles.connection}>
           <ConnectWalletBtn />
         </div>
-      </Box>
+      </div>
     </header>
   );
 }
