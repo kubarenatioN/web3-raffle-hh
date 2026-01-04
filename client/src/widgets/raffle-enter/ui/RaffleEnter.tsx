@@ -68,7 +68,7 @@ function RaffleEnter({ defaultBidAmount }: IProps) {
           onChange={(e) => changeBidAmount(e.target.value)}
           step='0.001'
         />
-        <Text size='xs' css={{ color: '$pink300' }}>
+        <Text size='xs' css={{ color: '$pink-300' }}>
           ≈ ${enterAmountUSD.toFixed(4)} USD
         </Text>
       </Box>

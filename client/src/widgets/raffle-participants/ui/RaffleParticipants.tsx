@@ -133,7 +133,7 @@ function RaffleParticipants() {
                     alignItems: 'baseline',
                   }}
                 >
-                  <Text size='xs' css={{ color: '$pink300' }}>
+                  <Text size='xs' css={{ color: '$pink-300' }}>
                     Bid amount
                   </Text>
                   <Text size='sm'>{el.amount} ETH</Text>

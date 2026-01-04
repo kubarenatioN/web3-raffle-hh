@@ -16,15 +16,6 @@ function App() {
         </Layout>
       </QueryClientProvider>
     </WagmiProvider>
-
-    // <>
-    //   <header className={styles.header}>
-    //     <NavLink to={'/'}>Home</NavLink>
-    //     <NavLink to={'/test'}>Test</NavLink>
-    //   </header>
-    //   <main className={styles.main}>{children}</main>
-    //   <footer className={styles.footer}>Footer</footer>
-    // </>
   );
 }
 

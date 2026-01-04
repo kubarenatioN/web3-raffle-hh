@@ -16,10 +16,13 @@ function Layout({ children }: LayoutProps) {
       <footer className={styles.footer}>
         <Box className={styles['footer-content']}>
           <Box
-            dir='row'
+            dir={{
+              '@initial': 'column',
+              '@sm': 'row',
+            }}
+            align='center'
+            gap='sm'
             css={{
-              gap: 8,
-              alignItems: 'center',
               justifyContent: 'space-between',
               flex: '1 1 100%',
             }}

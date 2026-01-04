@@ -38,7 +38,7 @@ function RaffleWinnerItem({ data }: { data: IRaffleWinnerItem }) {
           <Text size='md' css={{ color: '$gold-400' }}>
             {formatEther(fundsDrawn)} ETH
           </Text>
-          <Text size='xs' css={{ color: '$pink300' }}>
+          <Text size='xs' css={{ color: '$pink-300' }}>
             {participantsCount} participants
           </Text>
         </Box>

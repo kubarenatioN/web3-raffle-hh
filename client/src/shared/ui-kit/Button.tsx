@@ -21,17 +21,17 @@ export const Button = styled('button', {
         color: '#fff',
       },
       accent: {
-        backgroundColor: '$purple400',
+        backgroundColor: '$purple-400',
         color: '#fff',
       },
       success: {
-        backgroundColor: '$success400',
+        backgroundColor: '$success-400',
         color: '#fff',
       },
       outline: {
         backgroundColor: 'rgb(172 123 210 / 19%)',
         boxShadow: '0px 0px 0px 1px rgb(202 155 242 / 45%)',
-        color: '$pink300',
+        color: '$pink-300',
         '&:hover': {
           color: '$pink-100',
         },
@@ -63,7 +63,7 @@ export const Button = styled('button', {
 export const ConnectWalletButton = styled(Button, {
   defaultVariants: {
     variant: 'accent',
-    size: 'lg',
+    size: 'md',
   },
 
   fontWeight: '500',

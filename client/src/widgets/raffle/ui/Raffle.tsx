@@ -1,5 +1,5 @@
 import { raffleContract } from '@/shared/config/contracts';
-import { Box, SectionWrapper, Text } from '@/shared/ui-kit';
+import { Box, Button, SectionWrapper, Text } from '@/shared/ui-kit';
 import RaffleHistory from '@/widgets/draws-history/ui/RaffleHistory';
 import CurrentRound from '@/widgets/raffle-current-round/ui/CurrentRound';
 import RaffleParticipants from '@/widgets/raffle-participants/ui/RaffleParticipants';
@@ -23,19 +23,8 @@ function Raffle() {
 
   const { address } = useConnection();
 
-  // const { data: winnerBalance } = useReadContract({
-  //   ...raffleContract,
-  //   functionName: 's_winnerBalance',
-  //   args: [address!],
-  //   query: {
-  //     enabled: !!address,
-  //   },
-  // });
-
-  console.log('Raffle()');
-
   return (
-    <div className={`Raffle ${styles.wrapper}`}>
+    <div className={`${styles.wrapper}`}>
       <Box dir='column' css={{ gap: 12 }}>
         <Text as='h1' size='xl' weight='bold'>
           Decentralized Raffle
@@ -111,9 +100,9 @@ function RaffleOwnerControls() {
       <>
         <hr />
         <div>
-          <button disabled={pendingWrite} onClick={() => pickWinner()}>
+          <Button disabled={pendingWrite} onClick={() => pickWinner()}>
             Pick winner
-          </button>
+          </Button>
         </div>
       </>
     );

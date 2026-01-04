@@ -3,16 +3,31 @@
   justify-content: center;
   /* From https://css.glass */
   background: rgba(24, 24, 24, 0.29);
-  box-shadow: 0 3px 3px 0px rgb(33 33 33 / 55%);
+  box-shadow: 0 3px 3px 0px rgb(28 28 28 / 87%);
   backdrop-filter: blur(7.7px);
   -webkit-backdrop-filter: blur(7.7px);
 }
 
 .container {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex: 1 0 max-content;
-  max-width: 1600px;
-  padding: 1rem;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+}
+
+.connection {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (min-width: 640px) {
+  .container {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    flex: 1 0 max-content;
+    max-width: 1600px;
+    padding: 1rem;
+  }
 }

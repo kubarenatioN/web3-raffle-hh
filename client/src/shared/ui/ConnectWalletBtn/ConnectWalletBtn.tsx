@@ -2,7 +2,7 @@ import { Box, Text } from '@/shared/ui-kit';
 import { Button, ConnectWalletButton } from '@/shared/ui-kit/Button';
 import { formatAddress } from '@/shared/utils/address';
 import { useConnect, useConnection, useConnectors, useDisconnect } from 'wagmi';
-import { injected, metaMask } from 'wagmi/connectors';
+import { metaMask } from 'wagmi/connectors';
 
 interface IProps {
   text?: string;
@@ -10,24 +10,26 @@ interface IProps {
   textDisconnected?: string;
 }
 
-function ConnectWalletBtn({ text = 'Connect Wallet' }: IProps) {
-  const { isConnected, chain, address = '0x..' } = useConnection();
+function ConnectWalletBtn({ text = 'Connect with MetaMask' }: IProps) {
+  const { chain, address } = useConnection();
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
   const connectors = useConnectors();
 
-  let injectedConnector = connectors.find((c) => c.type === metaMask.type);
+  const connectorsMap = new Map(connectors.map((c) => [c.type, c]));
 
-  if (!injectedConnector) {
-    injectedConnector = connectors.find((c) => c.type === injected.type);
-  }
+  // console.log(connectors);
+
+  const connector = connectorsMap.get(metaMask.type);
+  // if (!connector) {
+  //   connector = connectorsMap.get(injected.type);
+  // }
 
   const chainLabel = `${chain?.name}`;
-  const addressPretty = formatAddress(address);
 
   const onConnect = () => {
-    if (injectedConnector) {
-      connect({ connector: injectedConnector });
+    if (connector) {
+      connect({ connector });
     }
   };
 
@@ -35,10 +37,10 @@ function ConnectWalletBtn({ text = 'Connect Wallet' }: IProps) {
     disconnect();
   };
 
-  if (isConnected) {
+  if (address) {
     return (
-      <Box css={{ alignItems: 'center', gap: '12px' }}>
-        <Box dir='row' css={{ alignItems: 'baseline', gap: 4 }}>
+      <Box align='center' gap='md'>
+        <Box align='baseline' gap='xs'>
           <Text size='sm' css={{ color: '$pink-100' }}>
             chain:
           </Text>
@@ -51,24 +53,24 @@ function ConnectWalletBtn({ text = 'Connect Wallet' }: IProps) {
           css={{
             background: '#45007533',
             border: '1px solid',
-            borderColor: '$pink400',
-            color: '$pink400',
+            borderColor: '$pink-400',
+            color: '$pink-400',
           }}
           title='Disconnect Wallet'
         >
-          <Text as='span'>{addressPretty}</Text>
+          <Text as='span'>{formatAddress(address)}</Text>
         </Button>
       </Box>
     );
   }
 
-  if (injectedConnector) {
+  if (connector) {
     return (
       <ConnectWalletButton onClick={onConnect}>{text}</ConnectWalletButton>
     );
   }
 
-  return null;
+  return <div>No connector found</div>;
 }
 
 export default ConnectWalletBtn;

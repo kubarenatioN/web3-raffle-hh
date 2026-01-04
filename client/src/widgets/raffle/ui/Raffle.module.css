@@ -7,11 +7,10 @@
 }
 
 .grid {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   min-height: 200px;
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  place-items: stretch;
   gap: 24px;
 }
 
@@ -26,4 +25,12 @@
     rgb(0 176 59 / 25%) 0%,
     rgb(0 154 63 / 13%) 100%
   );
+}
+
+@media (min-width: 940px) {
+  .grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    place-items: stretch;
+  }
 }

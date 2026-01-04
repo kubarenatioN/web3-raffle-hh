@@ -45,7 +45,7 @@ function WithdrawItem({ data }: { data: IWithdrawItem }) {
           </Box>
           <Text size='md'>{formatEther(amount)} ETH</Text>
         </Box>
-        <Text as='span' size='xs' css={{ color: '$pink400' }}>
+        <Text as='span' size='xs' css={{ color: '$pink-400' }}>
           {getTimeSince(blockTimestamp)}
         </Text>
       </Box>

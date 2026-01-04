@@ -1,15 +1,11 @@
 import { raffleContract } from '@/shared/config/contracts';
-import {
-  Box,
-  IconBox,
-  Section,
-  Text,
-  type IconBoxColorType,
-} from '@/shared/ui-kit';
+import { IconBox, Section, Text, type IconBoxColorType } from '@/shared/ui-kit';
+import { format } from 'date-fns';
 import { Clock, Coins, Trophy, Users } from 'lucide-react';
 import { useMemo } from 'react';
 import { formatEther } from 'viem';
 import { useReadContract } from 'wagmi';
+import styles from './Dashboard.module.css';
 
 function Dashboard() {
   const { data: totalFundsDrawn = 0n } = useReadContract({
@@ -34,13 +30,15 @@ function Dashboard() {
 
   // Memoize formatted values for performance
   const viewData = useMemo(() => {
+    const _formatRecentDrawAt = () => {
+      const _d = new Date(Number(recentDrawAt) * 1000);
+      return format(_d, 'dd MMM uu, HH:mm');
+    };
     const data = {
       totalFundsDrawn: formatEther(totalFundsDrawn),
       uniquePlayersCount: uniquePlayersCount.toString(),
       totalDrawsCount: totalDrawsCount.toString(),
-      recentDrawAt: recentDrawAt
-        ? new Date(Number(recentDrawAt) * 1000).toLocaleString()
-        : 'N/A',
+      recentDrawAt: recentDrawAt ? _formatRecentDrawAt() : '-',
     };
 
     return [
@@ -63,8 +61,8 @@ function Dashboard() {
         color: 'pink',
       },
       {
-        title: 'Next Draw In',
-        value: '2h 30m',
+        title: 'Recent Draw At',
+        value: data.recentDrawAt,
         icon: <Clock />,
         color: 'lime',
       },
@@ -72,29 +70,24 @@ function Dashboard() {
   }, [totalFundsDrawn, uniquePlayersCount, totalDrawsCount, recentDrawAt]);
 
   return (
-    <Box css={{ gap: '1rem' }}>
+    <div className={styles.container}>
       {viewData.map((card) => {
         return (
-          <Section
-            key={card.title}
-            css={{
-              flexDirection: 'column',
-              alignItems: 'flex-start',
-              flex: '1 1 25%',
-              gap: 12,
-            }}
-          >
+          <Section key={card.title} dir='column' align='start'>
             <IconBox colorType={card.color as IconBoxColorType}>
               {card.icon}
             </IconBox>
-            <Text size='xl'>{card.value}</Text>
-            <Text size='sm' css={{ color: '$pink-100' }}>
+            <Text
+              size='sm'
+              css={{ color: '$pink-100', padding: '0.8rem 0 0.2rem' }}
+            >
               {card.title}
             </Text>
+            <Text size='xl'>{card.value}</Text>
           </Section>
         );
       })}
-    </Box>
+    </div>
   );
 }
 

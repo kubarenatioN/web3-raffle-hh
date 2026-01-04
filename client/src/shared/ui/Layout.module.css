@@ -17,5 +17,11 @@
 .footer-content {
   max-width: 1440px;
   flex: 1 0 max-content;
-  padding: 2rem 1rem;
+  padding: 1rem;
+}
+
+@media screen and (min-width: 640px) {
+  .footer-content {
+    padding: 2rem 1rem;
+  }
 }

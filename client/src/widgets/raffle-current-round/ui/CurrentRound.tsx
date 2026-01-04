@@ -88,7 +88,7 @@ function CurrentRound() {
             </Text>
           </Box>
           <Text size='xl'>{roundPrizePoolEth} ETH</Text>
-          <Text as='span' size='xs' css={{ color: '$pink300' }}>
+          <Text as='span' size='xs' css={{ color: '$pink-300' }}>
             ≈ ${roundPrizePoolUsd.toFixed(4)} USD
           </Text>
         </BoxCard>

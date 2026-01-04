@@ -139,18 +139,18 @@ function RaffleWithdraw({ address }: { address: Address }) {
             gap: '12px',
           }}
         >
-          <Text size='sm' css={{ color: '$green100' }}>
+          <Text size='sm' css={{ color: '$green-100' }}>
             Total Unclaimed
           </Text>
           <Text size='2xl'>{formatEther(winnerBalance)} ETH</Text>
-          <Text size='sm' css={{ color: '$green200' }}>
+          <Text size='sm' css={{ color: '$green-200' }}>
             ≈ ${totalWithdrawAmountUSD} USD
           </Text>
         </Box>
         <Coins
           className={`${css({
             alignSelf: 'center',
-            color: '$green100',
+            color: '$green-100',
             opacity: 0.5,
           })}`}
           size={48}

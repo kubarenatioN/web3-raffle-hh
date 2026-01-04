@@ -4,7 +4,7 @@ import { injected, metaMask } from 'wagmi/connectors';
 
 export const config = createConfig({
   chains: [sepolia],
-  connectors: [injected({ target: 'metaMask' }), metaMask()],
+  connectors: [injected({ target: 'phantom' }), metaMask()],
   transports: {
     [sepolia.id]: http(),
   },
